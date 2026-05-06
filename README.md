@@ -28,6 +28,3 @@ Este projeto foi idealizado como parte de um trabalho acadêmico, com foco em cr
 
 - Lucas Thierry
 - Matheus Fabricio
-
-- Nome do integrante 1
-- Nome do integrante 2
