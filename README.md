@@ -47,4 +47,6 @@ http://127.0.0.1:8000/admin/
 
 Faça login com o superusuário criado anteriormente.
 
+Teste branch.
+
 Agora o **IntelIF** está pronto para ser utilizado!
