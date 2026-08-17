@@ -1,9 +1,6 @@
 ## Sobre
 Sistema de organização acadêmica para estudantes.
 
-## Tecnologias Utilizadas
-[![SkillIcons](https://skillicons.dev/icons?i=js,py,html,css,django,bootstrap)](https://skillicons.dev)<br/>
-
 ## Integrantes
 - Lucas Thierry
 - Matheus Fabricio
