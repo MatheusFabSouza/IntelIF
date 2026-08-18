@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from apps.usuarios.models import Usuario
 from .forms import EventoForm
 from .models import Evento
+from django.db.models import Q
 
 # CRUD EVENTOS
 
@@ -38,7 +39,16 @@ def lista_eventos(request):
     if not usuario_id:
         return redirect("usuarios:login")
 
-    eventos = Evento.objects.all()
+    usuario = Usuario.objects.get(id=usuario_id)
+
+    eventos = Evento.objects.filter(
+        Q(visibilidade="PESSOAL", criador=usuario)
+        |
+        Q(visibilidade="TURMA", turma=usuario.turma)
+        |
+        Q(visibilidade="TODOS")
+    ).order_by("data", "horario")
+
 
     return render(request, "eventos/listar_eventos.html", {"eventos": eventos})
 
@@ -52,6 +62,8 @@ def editar_evento(request, id):
     usuario = Usuario.objects.get(id=usuario_id)
 
     evento = Evento.objects.get(id=id)
+    if evento.criador.id != usuario.id:
+        return redirect("eventos:listar_eventos")
 
     if request.method == "POST":
         form = EventoForm(request.POST, instance=evento)
@@ -77,7 +89,12 @@ def excluir_evento(request, id):
     if not usuario_id:
         return redirect("usuarios:login")
 
+    usuario = Usuario.objects.get(id=usuario_id)
+
     evento = Evento.objects.get(id=id)
+
+    if evento.criador.id != usuario.id:
+        return redirect("eventos:listar_eventos")
 
     if request.method == "POST":
         evento.delete()
@@ -85,3 +102,24 @@ def excluir_evento(request, id):
         return redirect("eventos:listar_eventos")
 
     return render(request, "eventos/excluir_evento.html", {"evento": evento})
+
+# FIM CRUD EVENTOS -----------------------------------------------------------------------------
+
+def calendario(request):
+
+    usuario_id = request.session.get("usuario_id")
+
+    if not usuario_id:
+        return redirect("usuarios:login")
+
+    usuario = Usuario.objects.get(id=usuario_id)
+
+    eventos = Evento.objects.filter(
+        Q(visibilidade="PESSOAL", criador=usuario)
+        |
+        Q(visibilidade="TURMA", turma=usuario.turma)
+        |
+        Q(visibilidade="TODOS")
+    ).order_by("data", "horario")
+
+    return render(request, "eventos/calendario.html", {"eventos": eventos, "usuario_id": str(usuario.id),})

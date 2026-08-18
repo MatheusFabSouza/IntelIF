@@ -9,4 +9,6 @@ urlpatterns = [
     path("", views.lista_eventos, name="listar_eventos"),
     path("editar/<uuid:id>/", views.editar_evento, name="editar_evento"),
     path("excluir/<uuid:id>/", views.excluir_evento, name="excluir_evento"),
+
+    path("calendario/", views.calendario, name="calendario"),
 ]

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Calendário</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.css" rel="stylesheet">
+
+    <style>
+
+        .evento-tooltip {
+            position: absolute;
+            z-index: 1000;
+
+            background: white;
+            color: #222;
+
+            padding: 10px 12px;
+
+            border-radius: 8px;
+
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+            max-width: 250px;
+
+            font-size: 14px;
+
+            pointer-events: none;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <h1>Calendário</h1>
+
+    <div id="calendar"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const calendarEl = document.getElementById('calendar');
+
+            const usuarioId = "{{ usuario_id }}";
+
+            const eventos = [
+                {% for evento in eventos %}
+                    {
+                        id: "{{ evento.id }}",
+                        title: "{{ evento.titulo|escapejs }}",
+                        start: "{{ evento.data|date:'Y-m-d' }}{% if evento.horario %}T{{ evento.horario|time:'H:i' }}{% endif %}",
+                        descricao: "{{ evento.descricao|escapejs }}",
+                        categoria: "{{ evento.get_categoria_display|escapejs }}",
+                        criador_id: "{{ evento.criador.id }}"
+                    },
+                {% endfor %}
+            ];
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+
+                initialView: 'dayGridMonth',
+                locale: 'pt-br',
+
+                events: eventos,
+
+                eventMouseEnter: function(info) {
+
+                    const evento = info.event;
+
+                    const tooltip = document.createElement('div');
+
+                    tooltip.classList.add('evento-tooltip');
+
+                    tooltip.innerHTML = `
+                        <strong>${evento.title}</strong>
+                        <br>
+                        ${evento.extendedProps.categoria}
+                        <br>
+                        ${evento.extendedProps.descricao}
+                    `;
+
+                    document.body.appendChild(tooltip);
+
+                    tooltip.style.left = info.jsEvent.pageX + 10 + 'px';
+                    tooltip.style.top = info.jsEvent.pageY + 10 + 'px';
+
+                    info.el._tooltip = tooltip;
+                },
+
+                eventMouseLeave: function(info) {
+
+                    if (info.el._tooltip) {
+                        info.el._tooltip.remove();
+                        info.el._tooltip = null;
+                    }
+
+                },
+
+                eventClick: function(info) {
+
+                    const evento = info.event;
+
+                    if (evento.extendedProps.criador_id === usuarioId) {
+                        window.location.href = `/eventos/editar/${evento.id}/`;
+                    }
+
+                }
+
+            });
+
+            calendar.render();
+        });
+    </script>
+
+</body>
+
+</html>
