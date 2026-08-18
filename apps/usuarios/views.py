@@ -53,7 +53,8 @@ def callback(request):
             "foto": dados.get("url_foto_150x200", ""),
         }
     )
-    
+
+    request.session["usuario_id"] = str(usuario.id)
 
     return redirect("/")
 

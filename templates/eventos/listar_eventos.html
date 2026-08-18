@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Eventos</title>
+</head>
+
+<body>
+
+    <h1>Eventos</h1>
+
+    <a href="{% url 'eventos:criar_evento' %}">
+        Criar evento
+    </a>
+
+    <hr>
+
+    {% for evento in eventos %}
+
+        <div>
+            <h2>{{ evento.titulo }}</h2>
+
+            <p>{{ evento.descricao }}</p>
+
+            <p>
+                Categoria: {{ evento.get_categoria_display }}
+            </p>
+
+            <p>
+                Data: {{ evento.data }}
+            </p>
+
+            <p>
+                Horário: {{ evento.horario }}
+            </p>
+
+            <p>
+                Criador: {{ evento.criador.nome }}
+            </p>
+
+            <p>
+                Visibilidade: {{ evento.get_visibilidade_display }}
+            </p>
+
+            {% if evento.turma %}
+                <p>
+                    Turma: {{ evento.turma }}
+                </p>
+            {% endif %}
+        </div>
+        <a href="{% url 'eventos:editar_evento' evento.id %}">
+            Editar
+        </a> </br>
+        <a href="{% url 'eventos:excluir_evento' evento.id %}">
+            Excluir
+        </a>
+        <hr>
+
+    {% empty %}
+
+        <p>Nenhum evento cadastrado.</p>
+
+    {% endfor %}
+
+</body>
+</html>
