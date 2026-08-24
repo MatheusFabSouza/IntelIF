@@ -1,6 +1,6 @@
 import token
 
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.contrib.auth import logout as django_logout
 from .models import Usuario
 from .suap import oauth, obter_periodo_atual, obter_diarios
@@ -112,3 +112,16 @@ def sincronizar_classroom(request):
     print("ATIVIDADES SINCRONIZADAS:", quantidade)
 
     return redirect("/")
+
+def perfil(request):
+
+    usuario_id = request.session.get("usuario_id")
+
+    if not usuario_id:
+        return redirect("/usuarios/login/")
+
+    usuario = Usuario.objects.get(
+        id=usuario_id
+    )
+
+    return render(request, "usuarios/perfil.html", {"usuario": usuario})

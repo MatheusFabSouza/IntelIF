@@ -11,4 +11,5 @@ urlpatterns = [
     path("google/callback/", views.google_callback, name="google_callback"),
 
     path("perfil/integracoes/classroom/sincronizar/", views.sincronizar_classroom, name="sincronizar_classroom"),
+    path("perfil/", views.perfil, name="perfil"),
 ]
