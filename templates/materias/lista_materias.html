@@ -1,0 +1,49 @@
+<h1>Minhas matérias</h1>
+
+{% for materia in materias %}
+
+    <div>
+        <h2>{{ materia.descricao }}</h2>
+
+        <h3>Professores</h3>
+
+        {% for professor in materia.professores.all %}
+            <p>{{ professor.nome }}</p>
+        {% empty %}
+            <p>Nenhum professor cadastrado.</p>
+        {% endfor %}
+
+        <h3>Horários</h3>
+
+        {% for horario in materia.horarios.all %}
+            <p>
+                {{ horario.dia }}
+                —
+                {{ horario.hora_inicio|time:"H:i" }}
+                às
+                {{ horario.hora_fim|time:"H:i" }}
+            </p>
+        {% empty %}
+            <p>Nenhum horário cadastrado.</p>
+        {% endfor %}
+
+        {% if materia.proxima_aula %}
+            <p>
+                Próxima aula:
+                {{ materia.proxima_aula|date:"d/m" }}
+                às
+                {{ materia.proxima_aula|time:"H:i" }}
+            </p>
+        {% else %}
+            <p>Sem próxima aula</p>
+        {% endif %}
+
+    </div>
+
+    <hr>
+
+{% empty %}
+
+    <p>Nenhuma matéria encontrada.</p>
+
+{% endfor %}

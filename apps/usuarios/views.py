@@ -1,8 +1,13 @@
+import token
+
 from django.shortcuts import redirect
 from django.contrib.auth import logout as django_logout
 from .models import Usuario
-from .suap import oauth
+from .suap import oauth, obter_periodo_atual, obter_diarios
+from .google import oauth as google_oauth, obter_turmas, obter_atividades
 
+from apps.materias.suap import sincronizar_materias
+from apps.materias.classroom import sincronizar_atividades_classroom
 
 def login(request):
     redirect_uri = request.build_absolute_uri("/usuarios/callback/")
@@ -54,6 +59,8 @@ def callback(request):
         }
     )
 
+    sincronizar_materias(usuario, token)
+
     request.session["usuario_id"] = str(usuario.id)
 
     return redirect("/")
@@ -65,3 +72,43 @@ def logout(request):
 
     return redirect("/")
 
+def google_login(request):
+    redirect_uri = request.build_absolute_uri("/usuarios/google/callback/")
+    return google_oauth.google.authorize_redirect(request, redirect_uri)
+
+
+def google_callback(request):
+    token = google_oauth.google.authorize_access_token(request)
+
+    usuario_id = request.session.get("usuario_id")
+
+    if not usuario_id:
+        return redirect("/usuarios/login/")
+
+    request.session["google_token"] = token
+
+    return redirect("/")
+
+def sincronizar_classroom(request):
+
+    usuario_id = request.session.get("usuario_id")
+    google_token = request.session.get("google_token")
+
+    if not usuario_id:
+        return redirect("/usuarios/login/")
+
+    if not google_token:
+        return redirect("/usuarios/google/login/")
+
+    usuario = Usuario.objects.get(
+        id=usuario_id
+    )
+
+    quantidade = sincronizar_atividades_classroom(
+        usuario,
+        google_token
+    )
+
+    print("ATIVIDADES SINCRONIZADAS:", quantidade)
+
+    return redirect("/")
