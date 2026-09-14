@@ -1,35 +1,186 @@
-<h1>Perfil</h1>
+<!DOCTYPE html>
+<html lang="pt-BR">
 
-<h2>Informações Pessoais</h2>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<p>
-    <strong>Nome:</strong>
-    {{ usuario.nome }}
-</p>
+    <title>Perfil</title>
 
-<p>
-    <strong>E-mail:</strong>
-    {{ usuario.email }}
-</p>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-<h2>Informações Acadêmicas</h2>
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, sans-serif;
+            background: #f5f6f8;
+            color: #222;
+        }
 
-<p>
-    <strong>Matrícula:</strong>
-    {{ usuario.matricula }}
-</p>
+        .perfil-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
 
-<p>
-    <strong>Campus:</strong>
-    {{ usuario.campus }}
-</p>
+        .perfil-header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
 
-<p>
-    <strong>Curso:</strong>
-    {{ usuario.curso }}
-</p>
+        .perfil-header h1 {
+            margin: 0 0 5px;
+        }
 
-<p>
-    <strong>Tipo de usuário:</strong>
-    {{ usuario.tipo_usuario }}
-</p>
+        .perfil-header p {
+            margin: 0;
+            color: #666;
+        }
+
+        .secao {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .secao h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .informacoes {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .informacao {
+            padding: 15px;
+            background: #f7f7f7;
+            border-radius: 8px;
+        }
+
+        .informacao strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .integracoes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .integracao-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .integracao-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .integracao-card p {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="perfil-container">
+
+        <div class="perfil-header">
+            <h1>{{ usuario.nome }}</h1>
+            <p>Perfil do usuário</p>
+        </div>
+
+
+        <div class="secao">
+
+            <h2>Informações Pessoais</h2>
+
+            <div class="informacoes">
+
+                <div class="informacao">
+                    <strong>Nome</strong>
+                    {{ usuario.nome }}
+                </div>
+
+                <div class="informacao">
+                    <strong>E-mail</strong>
+                    {{ usuario.email }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="secao">
+
+            <h2>Informações Acadêmicas</h2>
+
+            <div class="informacoes">
+
+                <div class="informacao">
+                    <strong>Matrícula</strong>
+                    {{ usuario.matricula }}
+                </div>
+
+                <div class="informacao">
+                    <strong>Campus</strong>
+                    {{ usuario.campus }}
+                </div>
+
+                <div class="informacao">
+                    <strong>Curso</strong>
+                    {{ usuario.curso }}
+                </div>
+
+                <div class="informacao">
+                    <strong>Tipo de usuário</strong>
+                    {{ usuario.tipo_usuario }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="secao">
+
+            <h2>Integrações</h2>
+
+            <div class="integracoes">
+                <a href="{% url 'usuarios:sincronizar_classroom' %}" style="text-decoration: none; color: inherit;">
+                    <div class="integracao-card">
+
+                            <h3>Google Classroom</h3>
+
+                            <p>
+                                Sincronize suas atividades do Google Classroom
+                                com o calendário.
+                            </p>
+        
+                    </div>
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

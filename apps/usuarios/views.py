@@ -112,12 +112,13 @@ def sincronizar_classroom(request):
 
     quantidade = sincronizar_atividades_classroom(
         usuario,
-        google_token
+        google_token,
+        completa=True
     )
 
     print("ATIVIDADES SINCRONIZADAS:", quantidade)
 
-    return redirect("/")
+    return redirect("usuarios:perfil")
 
 def perfil(request):
 
