@@ -3,6 +3,7 @@ from apps.usuarios.models import Usuario
 from .forms import EventoForm
 from .models import Evento
 from django.db.models import Q
+from apps.materias.models import AtividadeClassroom
 
 # CRUD EVENTOS
 
@@ -122,4 +123,6 @@ def calendario(request):
         Q(visibilidade="TODOS")
     ).order_by("data", "horario")
 
-    return render(request, "eventos/calendario.html", {"eventos": eventos, "usuario_id": str(usuario.id),})
+    atividades_classroom = AtividadeClassroom.objects.filter(usuario=usuario).order_by("data_entrega")
+
+    return render(request, "eventos/calendario.html", {"eventos": eventos, "usuario_id": str(usuario.id), "atividades_classroom": atividades_classroom})

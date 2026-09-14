@@ -4,7 +4,7 @@ from apps.materias.models import AtividadeClassroom
 from apps.usuarios.google import obter_turmas, obter_atividades
 
 
-def sincronizar_atividades_classroom(usuario, token):
+def sincronizar_atividades_classroom(usuario, token, completa=False):
 
     agora = datetime.now()
 
@@ -54,8 +54,8 @@ def sincronizar_atividades_classroom(usuario, token):
                 segundo
             )
 
-            # Ignora atividades com mais de 30 dias que já passaram.
-            if data_entrega < limite_passado:
+            # Na sincronização rápida, ignora atividades com mais de 30 dias.
+            if not completa and data_entrega < limite_passado:
                 continue
 
             id_classroom = atividade.get("id")

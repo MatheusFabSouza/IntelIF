@@ -87,6 +87,12 @@ def google_callback(request):
 
     request.session["google_token"] = token
 
+    usuario = Usuario.objects.get(id=usuario_id)
+
+    quantidade = sincronizar_atividades_classroom(usuario, token)
+
+    print("ATIVIDADES SINCRONIZADAS NO LOGIN:", quantidade)
+    
     return redirect("/")
 
 def sincronizar_classroom(request):
@@ -106,12 +112,13 @@ def sincronizar_classroom(request):
 
     quantidade = sincronizar_atividades_classroom(
         usuario,
-        google_token
+        google_token,
+        completa=True
     )
 
     print("ATIVIDADES SINCRONIZADAS:", quantidade)
 
-    return redirect("/")
+    return redirect("usuarios:perfil")
 
 def perfil(request):
 

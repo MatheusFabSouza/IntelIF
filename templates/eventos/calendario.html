@@ -60,6 +60,18 @@
                         criador_id: "{{ evento.criador.id }}"
                     },
                 {% endfor %}
+
+                {% for atividade in atividades_classroom %}
+                    {
+                        id: "classroom-{{ atividade.id }}",
+                        title: "{{ atividade.titulo|escapejs }}",
+                        start: "{{ atividade.data_entrega|date:'Y-m-d\\TH:i:s' }}",
+                        descricao: "Atividade do Google Classroom",
+                        categoria: "Classroom",
+                        origem: "classroom",
+                        link: "{{ atividade.link|escapejs }}"
+                    },
+                {% endfor %}
             ];
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -105,6 +117,16 @@
                 eventClick: function(info) {
 
                     const evento = info.event;
+                    
+                    if (evento.extendedProps.origem === "classroom") {
+
+                        if (evento.extendedProps.link) {
+                            window.open(evento.extendedProps.link, '_blank');
+                        }
+
+                        return;
+                    }
+
 
                     if (evento.extendedProps.criador_id === usuarioId) {
                         window.location.href = `/eventos/editar/${evento.id}/`;
