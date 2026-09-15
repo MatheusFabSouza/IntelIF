@@ -38,6 +38,10 @@
             <p>Sem próxima aula</p>
         {% endif %}
 
+        <a href="{% url 'materias:detalhes_materia' materia.id %}">
+            Ver detalhes
+        </a>
+
     </div>
 
     <hr>
