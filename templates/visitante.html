@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="IntelIF é o sistema que ajuda estudantes do IFRN a organizar matérias, atividades e prazos em um só lugar.">
+  <title>IntelIF - Organize seus estudos</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'intelif/css/landing.css' %}">
+</head>
+<body>
+  <nav class="navbar navbar-expand-md intelif-navbar sticky-top" aria-label="Navegação principal">
+    <div class="container-xl px-4">
+      <a href="{% url 'home' %}" class="navbar-brand brand-link">
+        <img src="{% static 'intelif/img/logo-intelif.png' %}" alt="Logo IntelIF" class="brand-logo">
+        <span class="brand-name"><span>Intel</span><strong>IF</strong></span>
+      </a>
+
+      <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Abrir menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainNav">
+        <div class="navbar-nav mx-auto nav-links">
+          <a class="nav-link" href="#funcionalidades">Funcionalidades</a>
+          <a class="nav-link" href="#sobre">Sobre</a>
+          <a class="nav-link" href="#duvidas">Dúvidas</a>
+        </div>
+        <div class="d-flex mt-3 mt-md-0">
+          <a href="{% url 'usuarios:login' %}" class="btn btn-login-outline">Entrar</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="container-xl px-4">
+        <div class="row align-items-center gy-5">
+          <div class="col-lg-6 hero-copy reveal">
+            <div class="hero-badge">
+              <i class="fa-solid fa-star"></i>
+              Seu jeito de estudar, organizado.
+            </div>
+
+            <h1 class="hero-title">
+              Organize seus estudos e conquiste <span>seus objetivos</span>
+            </h1>
+
+            <p class="hero-text">
+              IntelIF é o sistema que te ajuda a organizar matérias, conteúdos, atividades e prazos em um só lugar. Mais foco, menos bagunça, melhores resultados!
+            </p>
+
+            <div class="hero-actions">
+              <a href="{% url 'usuarios:login' %}" class="btn btn-intelif btn-lg-custom">
+                Começar agora <i class="fa-solid fa-arrow-right"></i>
+              </a>
+            </div>
+
+            <div class="hero-trust">
+              <span><i class="fa-solid fa-check-circle text-success"></i> Grátis</span>
+              <span><i class="fa-solid fa-heart text-danger"></i> Feito para federais</span>
+              <span><i class="fa-solid fa-lock trust-lock"></i> Integrado ao SUAP</span>
+            </div>
+          </div>
+
+          <div class="col-lg-6 hero-visual reveal reveal-delay">
+            <img src="{% static 'intelif/img/estudante-intelif.png' %}" alt="Ilustração de estudante usando o IntelIF" class="img-fluid hero-image">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="funcionalidades" class="features-section section-space">
+      <div class="container-xl px-4">
+        <h2 class="section-title reveal">Tudo que você precisa para <span>estudar melhor</span></h2>
+        <div class="row g-4 g-lg-5">
+          <div class="col-md-6 col-lg-4 reveal">
+            <article class="feature-card h-100">
+              <div class="feature-icon green"><i class="fa-regular fa-calendar-check"></i></div>
+              <div><h3>Calendário integrado</h3><p>Visualize compromissos, provas e entregas em um calendário simples e completo.</p></div>
+            </article>
+          </div>
+          <div class="col-md-6 col-lg-4 reveal">
+            <article class="feature-card h-100">
+              <div class="feature-icon purple"><i class="fa-solid fa-book-open"></i></div>
+              <div><h3>Organize suas matérias</h3><p>Centralize suas disciplinas e acompanhe professores e horários em cada uma delas.</p></div>
+            </article>
+          </div>
+          <div class="col-md-6 col-lg-4 reveal">
+            <article class="feature-card h-100">
+              <div class="feature-icon orange"><i class="fa-solid fa-clipboard-list"></i></div>
+              <div><h3>Gerencie atividades</h3><p>Acompanhe atividades, prazos e eventos acadêmicos sem depender de várias telas.</p></div>
+            </article>
+          </div>
+          <div class="col-md-6 col-lg-4 reveal">
+            <article class="feature-card h-100">
+              <div class="feature-icon blue"><i class="fa-brands fa-google"></i></div>
+              <div><h3>Google Classroom</h3><p>Sincronize as atividades do Classroom e reúna seus prazos no IntelIF.</p></div>
+            </article>
+          </div>
+          <div class="col-md-6 col-lg-4 reveal">
+            <article class="feature-card h-100">
+              <div class="feature-icon red"><i class="fa-solid fa-building-columns"></i></div>
+              <div><h3>Integração com o SUAP</h3><p>Use os dados acadêmicos do SUAP para trazer suas matérias e informações institucionais.</p></div>
+            </article>
+          </div>
+          <div class="col-md-6 col-lg-4 reveal">
+            <article class="feature-card h-100">
+              <div class="feature-icon teal"><i class="fa-solid fa-layer-group"></i></div>
+              <div><h3>Tudo em um lugar</h3><p>Uma interface única para reduzir a dispersão e facilitar o acompanhamento da rotina acadêmica.</p></div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sobre" class="about-section section-space">
+      <div class="container-xl px-4">
+        <div class="about-card reveal">
+          <span class="eyebrow">SOBRE O PROJETO</span>
+          <h2>IntelIF</h2>
+          <p>O IntelIF é um projeto em desenvolvimento voltado à organização da rotina acadêmica de estudantes do Instituto Federal. A proposta é reunir informações que normalmente ficam espalhadas entre serviços diferentes em uma experiência mais direta.</p>
+          <!-- <p class="mb-0">Encontrou um problema ou tem uma sugestão? <a href="mailto:ex@gmail.com">intelif2026@gmail.com</a></p> -->
+        </div>
+      </div>
+    </section>
+
+    <section id="duvidas" class="faq-section section-space">
+      <div class="container-xl px-4">
+        <h2 class="section-title reveal">Dúvidas <span>frequentes</span></h2>
+        <div class="accordion intelif-accordion mx-auto reveal" id="faqAccordion">
+          <div class="accordion-item">
+            <h3 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">Preciso criar uma conta nova?</button></h3>
+            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion"><div class="accordion-body">Não. O acesso principal é feito por meio da autenticação do SUAP.</div></div>
+          </div>
+          <div class="accordion-item">
+            <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">O Classroom é obrigatório?</button></h3>
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion"><div class="accordion-body">Não. A integração com o Google Classroom é complementar e pode ser conectada depois pelo perfil.</div></div>
+          </div>
+          <div class="accordion-item">
+            <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">Onde aparecem meus prazos?</button></h3>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion"><div class="accordion-body">O dashboard destaca os próximos compromissos e o calendário reúne eventos do IntelIF e atividades sincronizadas.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container-xl px-4 d-flex flex-column flex-md-row justify-content-between gap-2">
+      <span>IntelIF</span>
+      <span>IFRN</span>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'intelif/js/public.js' %}"></script>
+</body>
+</html>

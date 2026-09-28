@@ -1,30 +1,18 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Excluir evento</title>
-</head>
-
-<body>
-
-    <h1>Excluir evento</h1>
-
-    <p>
-        Tem certeza que deseja excluir o evento
-        <strong>{{ evento.titulo }}</strong>?
-    </p>
-
-    <form method="POST">
-        {% csrf_token %}
-
-        <button type="submit">
-            Sim, excluir
-        </button>
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Excluir evento - IntelIF{% endblock %}
+{% block page_title %}Calendário{% endblock %}
+{% block nav_calendario_active %}active{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'intelif/css/forms.css' %}">{% endblock %}
+{% block content %}
+  <div class="confirm-card">
+    <div class="confirm-icon"><i class="fa-regular fa-trash-can"></i></div>
+    <h2>Excluir evento?</h2>
+    <p>O evento <strong>{{ evento.titulo }}</strong> será excluído permanentemente. Esta ação não pode ser desfeita.</p>
+    <form method="post" class="form-actions">
+      {% csrf_token %}
+      <button type="submit" class="btn-if btn-if-danger">Sim, excluir</button>
+      <a href="{% url 'eventos:calendario' %}" class="btn-if btn-if-outline">Cancelar</a>
     </form>
-
-    <a href="{% url 'eventos:listar_eventos' %}">
-        Cancelar
-    </a>
-
-</body>
-</html>
+  </div>
+{% endblock %}

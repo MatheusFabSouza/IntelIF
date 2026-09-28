@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - IntelIF</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'intelif/css/login.css' %}">
+</head>
+<body>
+  <main class="login-layout">
+    <section class="login-intro">
+      <div class="login-intro-content">
+        <a href="{% url 'home' %}" class="login-brand">
+          <img src="{% static 'intelif/img/logo-intelif.png' %}" alt="Logo IntelIF">
+          <span><strong>Intel</strong><b>IF</b></span>
+        </a>
+
+        <h1>Organize seus estudos e conquiste <span>seus objetivos</span></h1>
+        <p class="intro-text">IntelIF reúne matérias, atividades e prazos em um só lugar, usando sua conta institucional para facilitar o acesso às informações acadêmicas.</p>
+
+        <div class="login-features">
+          <div class="login-feature">
+            <span class="feature-icon"><i class="fa-regular fa-calendar"></i></span>
+            <div><h2>Calendário integrado</h2><p>Acompanhe prazos, provas e eventos.</p></div>
+          </div>
+          <div class="login-feature">
+            <span class="feature-icon"><i class="fa-regular fa-folder"></i></span>
+            <div><h2>Matérias organizadas</h2><p>Consulte disciplinas, professores e horários.</p></div>
+          </div>
+          <div class="login-feature">
+            <span class="feature-icon"><i class="fa-solid fa-rotate"></i></span>
+            <div><h2>Dados sincronizados</h2><p>Integração com SUAP e Google Classroom.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="login-action">
+      <div class="login-card">
+        <div class="shield-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h2>Bem-vindo ao <span class="intel">Intel</span><span class="if">IF</span></h2>
+        <p>Para continuar, autentique-se com sua conta do SUAP. A senha é informada diretamente no ambiente de autenticação do SUAP.</p>
+        <div class="login-divider"></div>
+
+        <a href="{% url 'usuarios:suap_login' %}" class="btn-suap">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          Entrar com SUAP
+        </a>
+
+        <a href="{% url 'home' %}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Voltar para a página inicial</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

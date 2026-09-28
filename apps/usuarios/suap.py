@@ -11,8 +11,8 @@ oauth = OAuth()
 
 oauth.register(
     name="suap",
-    client_id=os.getenv("SUAP_CLIENT_ID"),
-    client_secret=os.getenv("SUAP_CLIENT_SECRET"),
+    client_id=os.getenv("SUAP_CLIENT_ID") or os.getenv("CLIENT_ID"),
+    client_secret=os.getenv("SUAP_CLIENT_SECRET") or os.getenv("CLIENT_SECRET"),
     api_base_url="https://suap.ifrn.edu.br/api/",
     access_token_url="https://suap.ifrn.edu.br/o/token/",
     authorize_url="https://suap.ifrn.edu.br/o/authorize/",

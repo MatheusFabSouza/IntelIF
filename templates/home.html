@@ -1,0 +1,121 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Home - IntelIF{% endblock %}
+{% block page_title %}Home{% endblock %}
+{% block nav_home_active %}active{% endblock %}
+
+{% block content %}
+  <section aria-labelledby="calendario-resumo">
+    <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+      <h2 class="section-title mb-0" id="calendario-resumo">Calendário</h2>
+      <a href="{% url 'eventos:calendario' %}" class="soft-link">Abrir calendário <i class="fa-solid fa-arrow-right ms-1"></i></a>
+    </div>
+
+    <div class="calendar-strip" aria-label="Próximos sete dias">
+      {% for dia in dias %}
+        <div class="calendar-day {% if dia.is_today %}is-today{% endif %}">
+          <div class="dow">{{ dia.dia_semana }}</div>
+          <div class="num">{{ dia.numero }}</div>
+          {% for item in dia.itens %}
+            <span class="calendar-tag {{ item.classe }}" title="{{ item.titulo }}">
+              {% if item.tipo == 'classroom' %}<i class="fa-brands fa-google"></i>{% else %}<i class="fa-regular fa-calendar"></i>{% endif %}
+              {{ item.titulo }}
+            </span>
+          {% endfor %}
+          {% if dia.tem_mais %}<span class="more-tag">+ mais itens</span>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="panel-grid">
+    <section class="dashboard-card" aria-labelledby="proximas-atividades">
+      <div class="card-headline">
+        <h2 id="proximas-atividades"><i class="fas fa-list"></i> Próximas Atividades</h2>
+        <a href="{% url 'eventos:calendario' %}" class="soft-link">Ver todas</a>
+      </div>
+
+      {% for atividade in proximas_atividades %}
+        {% if atividade.link %}<a class="activity-row" href="{{ atividade.link }}" target="_blank" rel="noopener noreferrer">{% else %}<div class="activity-row">{% endif %}
+          <span class="activity-swatch {{ atividade.classe }}"></span>
+          <div class="activity-content">
+            <div class="activity-title">{{ atividade.titulo }}</div>
+            <div class="activity-sub">{{ atividade.subtitulo }} · {{ atividade.origem }}</div>
+          </div>
+          <time class="activity-date" datetime="{{ atividade.quando|date:'c' }}">{{ atividade.quando|date:"d/m" }}<br>{{ atividade.quando|time:"H:i" }}</time>
+        {% if atividade.link %}</a>{% else %}</div>{% endif %}
+      {% empty %}
+        <div class="empty-state">
+          <i class="fa-regular fa-circle-check"></i>
+          <p>Nenhuma atividade ou evento futuro encontrado.</p>
+        </div>
+      {% endfor %}
+    </section>
+
+    <section class="dashboard-card" aria-labelledby="resumo-academico">
+      <div class="card-headline">
+        <h2 id="resumo-academico"><i class="fas fa-chart-pie"></i> Resumo</h2>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box green">
+          <div class="stat-top"><i class="fas fa-check-square"></i><span class="stat-number">{{ total_pendentes }}</span></div>
+          <div class="stat-label">Atividades futuras</div>
+        </div>
+        <div class="stat-box blue">
+          <div class="stat-top"><i class="fas fa-book"></i><span class="stat-number">{{ total_materias }}</span></div>
+          <div class="stat-label">Matérias ativas</div>
+        </div>
+        <div class="stat-box purple">
+          <div class="stat-top"><i class="fas fa-calendar-day"></i><span class="stat-number">{{ total_eventos }}</span></div>
+          <div class="stat-label">Eventos nos próximos 30 dias</div>
+        </div>
+      </div>
+
+      <div class="integration-status">
+        <span><i class="fa-brands fa-google me-2"></i>Google Classroom</span>
+        {% if classroom_conectado %}
+          <span class="status-pill ok"><i class="fa-solid fa-circle-check"></i> Conectado</span>
+        {% else %}
+          <a href="{% url 'usuarios:google_login' %}" class="status-pill off"><i class="fa-solid fa-link"></i> Conectar</a>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+
+  <div class="panel-grid">
+    <section class="dashboard-card" aria-labelledby="minhas-materias">
+      <div class="card-headline">
+        <h2 id="minhas-materias"><i class="fas fa-book-open"></i> Minhas Matérias</h2>
+        <a href="{% url 'materias:listar_materias' %}" class="soft-link">Ver todas</a>
+      </div>
+
+      {% for materia in materias %}
+        <div class="subject-row">
+          <span class="subject-color"></span>
+          <div>
+            <div class="subject-name">{{ materia.descricao }}</div>
+            <div class="subject-prof">
+              {% for professor in materia.professores.all %}{{ professor.nome }}{% if not forloop.last %}, {% endif %}{% empty %}Professor não informado{% endfor %}
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="empty-state">
+          <i class="fa-solid fa-book-open"></i>
+          <p>Nenhuma matéria sincronizada com o SUAP.</p>
+        </div>
+      {% endfor %}
+    </section>
+
+    <section class="dashboard-card" aria-labelledby="atalhos">
+      <div class="card-headline">
+        <h2 id="atalhos"><i class="fas fa-bolt"></i> Acessos Rápidos</h2>
+      </div>
+      <a class="quick-link" href="{% url 'eventos:criar_evento' %}"><span class="quick-link-icon"><i class="fa-solid fa-plus"></i></span><span>Criar um novo evento</span></a>
+      <a class="quick-link" href="{% url 'eventos:calendario' %}"><span class="quick-link-icon"><i class="fa-regular fa-calendar"></i></span><span>Abrir o calendário completo</span></a>
+      <a class="quick-link" href="{% url 'usuarios:sincronizar_classroom' %}"><span class="quick-link-icon"><i class="fa-brands fa-google"></i></span><span>Sincronizar atividades do Classroom</span></a>
+      <a class="quick-link" href="{% url 'usuarios:perfil' %}"><span class="quick-link-icon"><i class="fa-regular fa-user"></i></span><span>Ver perfil e integrações</span></a>
+    </section>
+  </div>
+{% endblock %}

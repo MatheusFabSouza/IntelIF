@@ -31,7 +31,7 @@ def criar_evento(request):
     else:
         form = EventoForm()
 
-    return render(request, "eventos/criar_evento.html" ,{"form": form})
+    return render(request, "eventos/criar_evento.html" ,{"form": form, "usuario": usuario})
 
 def lista_eventos(request):
 
@@ -51,7 +51,7 @@ def lista_eventos(request):
     ).order_by("data", "horario")
 
 
-    return render(request, "eventos/listar_eventos.html", {"eventos": eventos})
+    return render(request, "eventos/listar_eventos.html", {"eventos": eventos, "usuario": usuario})
 
 def editar_evento(request, id):
 
@@ -80,6 +80,7 @@ def editar_evento(request, id):
     return render(request, "eventos/editar_evento.html", {
             "form": form,
             "evento": evento,
+            "usuario": usuario,
         }
     )
 
@@ -102,7 +103,7 @@ def excluir_evento(request, id):
 
         return redirect("eventos:listar_eventos")
 
-    return render(request, "eventos/excluir_evento.html", {"evento": evento})
+    return render(request, "eventos/excluir_evento.html", {"evento": evento, "usuario": usuario})
 
 # FIM CRUD EVENTOS -----------------------------------------------------------------------------
 
@@ -125,4 +126,4 @@ def calendario(request):
 
     atividades_classroom = AtividadeClassroom.objects.filter(usuario=usuario).order_by("data_entrega")
 
-    return render(request, "eventos/calendario.html", {"eventos": eventos, "usuario_id": str(usuario.id), "atividades_classroom": atividades_classroom})
+    return render(request, "eventos/calendario.html", {"eventos": eventos, "usuario": usuario, "usuario_id": str(usuario.id), "atividades_classroom": atividades_classroom})

@@ -1,68 +1,40 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Eventos - IntelIF{% endblock %}
+{% block page_title %}Calendário{% endblock %}
+{% block nav_calendario_active %}active{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'intelif/css/forms.css' %}">{% endblock %}
+{% block content %}
+  <div class="page-intro">
+    <div><h2>Eventos</h2><p>Lista de compromissos disponíveis para sua conta.</p></div>
+    <div class="page-actions">
+      <a href="{% url 'eventos:calendario' %}" class="btn-if btn-if-outline"><i class="fa-regular fa-calendar"></i> Calendário</a>
+      <a href="{% url 'eventos:criar_evento' %}" class="btn-if"><i class="fa-solid fa-plus"></i> Criar evento</a>
+    </div>
+  </div>
 
-    <title>Eventos</title>
-</head>
-
-<body>
-
-    <h1>Eventos</h1>
-
-    <a href="{% url 'eventos:criar_evento' %}">
-        Criar evento
-    </a>
-
-    <hr>
-
+  <div class="event-list">
     {% for evento in eventos %}
-
+      <article class="event-card">
         <div>
-            <h2>{{ evento.titulo }}</h2>
-
-            <p>{{ evento.descricao }}</p>
-
-            <p>
-                Categoria: {{ evento.get_categoria_display }}
-            </p>
-
-            <p>
-                Data: {{ evento.data }}
-            </p>
-
-            <p>
-                Horário: {{ evento.horario }}
-            </p>
-
-            <p>
-                Criador: {{ evento.criador.nome }}
-            </p>
-
-            <p>
-                Visibilidade: {{ evento.get_visibilidade_display }}
-            </p>
-
-            {% if evento.turma %}
-                <p>
-                    Turma: {{ evento.turma }}
-                </p>
-            {% endif %}
+          <h3>{{ evento.titulo }}</h3>
+          {% if evento.descricao %}<p>{{ evento.descricao }}</p>{% endif %}
+          <div class="event-meta">
+            <span><i class="fa-regular fa-calendar"></i>{{ evento.data|date:"d/m/Y" }}</span>
+            <span><i class="fa-regular fa-clock"></i>{{ evento.horario|time:"H:i" }}</span>
+            <span><i class="fa-solid fa-tag"></i>{{ evento.get_categoria_display }}</span>
+            <span><i class="fa-solid fa-eye"></i>{{ evento.get_visibilidade_display }}</span>
+          </div>
         </div>
-        <a href="{% url 'eventos:editar_evento' evento.id %}">
-            Editar
-        </a> </br>
-        <a href="{% url 'eventos:excluir_evento' evento.id %}">
-            Excluir
-        </a>
-        <hr>
-
+        {% if evento.criador.id == usuario.id %}
+          <div class="event-card-actions">
+            <a class="icon-btn" href="{% url 'eventos:editar_evento' evento.id %}" title="Editar"><i class="fa-regular fa-pen-to-square"></i></a>
+            <a class="icon-btn danger" href="{% url 'eventos:excluir_evento' evento.id %}" title="Excluir"><i class="fa-regular fa-trash-can"></i></a>
+          </div>
+        {% endif %}
+      </article>
     {% empty %}
-
-        <p>Nenhum evento cadastrado.</p>
-
+      <div class="empty-state dashboard-card"><i class="fa-regular fa-calendar-xmark"></i><p>Nenhum evento cadastrado.</p></div>
     {% endfor %}
-
-</body>
-</html>
+  </div>
+{% endblock %}
