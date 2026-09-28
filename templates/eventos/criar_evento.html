@@ -1,27 +1,28 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Criar evento</title>
-</head>
-
-<body>
-
-    <h1>Criar evento</h1>
-
-    <form method="POST">
-
-        {% csrf_token %}
-
-        {{ form.as_p }}
-
-        <button type="submit">
-            Criar evento
-        </button>
-
-    </form>
-
-</body>
-</html>
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Criar evento - IntelIF{% endblock %}
+{% block page_title %}Calendário{% endblock %}
+{% block nav_calendario_active %}active{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'intelif/css/forms.css' %}">{% endblock %}
+{% block content %}
+  <div class="page-intro">
+    <div><h2>Criar evento</h2><p>Adicione um compromisso pessoal, da turma ou visível para todos.</p></div>
+    <a href="{% url 'eventos:calendario' %}" class="btn-if btn-if-outline"><i class="fa-solid fa-arrow-left"></i> Voltar ao calendário</a>
+  </div>
+  <form method="post" class="form-panel" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="field-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-help">{{ field.help_text }}</div>{% endif %}
+        {% if field.errors %}<div class="form-errors">{{ field.errors }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <div class="form-actions">
+      <button type="submit" class="btn-if"><i class="fa-solid fa-plus"></i> Criar evento</button>
+      <a href="{% url 'eventos:calendario' %}" class="btn-if btn-if-outline">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'intelif/js/evento-form.js' %}"></script>{% endblock %}

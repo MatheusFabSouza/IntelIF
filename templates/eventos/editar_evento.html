@@ -1,36 +1,27 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Editar evento</title>
-</head>
-
-<body>
-
-    <h1>Editar evento</h1>
-
-    <form method="POST">
-
-        {% csrf_token %}
-
-        {{ form.as_p }}
-
-        <button type="submit">
-            Salvar alterações
-        </button>
-
-    </form>
-
-    <a href="{% url 'eventos:listar_eventos' %}">
-        Excluir
-    </a> </br>
-
-
-    <a href="{% url 'eventos:listar_eventos' %}">
-        Voltar
-    </a>
-
-</body>
-</html>
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Editar evento - IntelIF{% endblock %}
+{% block page_title %}Calendário{% endblock %}
+{% block nav_calendario_active %}active{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'intelif/css/forms.css' %}">{% endblock %}
+{% block content %}
+  <div class="page-intro">
+    <div><h2>Editar evento</h2><p>Atualize os dados de “{{ evento.titulo }}”.</p></div>
+    <a href="{% url 'eventos:calendario' %}" class="btn-if btn-if-outline"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+  </div>
+  <form method="post" class="form-panel" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="field-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="form-errors">{{ field.errors }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <div class="form-actions">
+      <button type="submit" class="btn-if"><i class="fa-solid fa-floppy-disk"></i> Salvar alterações</button>
+      <a href="{% url 'eventos:excluir_evento' evento.id %}" class="btn-if btn-if-danger"><i class="fa-regular fa-trash-can"></i> Excluir</a>
+    </div>
+  </form>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'intelif/js/evento-form.js' %}"></script>{% endblock %}

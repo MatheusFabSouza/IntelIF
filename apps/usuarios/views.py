@@ -1,15 +1,20 @@
-import token
-
 from django.shortcuts import redirect, render
 from django.contrib.auth import logout as django_logout
 from .models import Usuario
-from .suap import oauth, obter_periodo_atual, obter_diarios
-from .google import oauth as google_oauth, obter_turmas, obter_atividades
+from .suap import oauth
+from .google import oauth as google_oauth
 
 from apps.materias.suap import sincronizar_materias
 from apps.materias.classroom import sincronizar_atividades_classroom
 
 def login(request):
+    if request.session.get("usuario_id"):
+        return redirect("home")
+
+    return render(request, "usuarios/login.html")
+
+
+def suap_login(request):
     redirect_uri = request.build_absolute_uri("/usuarios/callback/")
     return oauth.suap.authorize_redirect(request, redirect_uri)
 
@@ -131,4 +136,4 @@ def perfil(request):
         id=usuario_id
     )
 
-    return render(request, "usuarios/perfil.html", {"usuario": usuario})
+    return render(request, "usuarios/perfil.html", {"usuario": usuario, "classroom_conectado": bool(request.session.get("google_token"))})

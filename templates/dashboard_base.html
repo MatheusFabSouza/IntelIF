@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>{% block title %}IntelIF{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'intelif/css/dashboard.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="dashboard-body">
+  <div class="mobile-overlay" id="mobileOverlay" hidden></div>
+
+  <aside class="sidebar" id="sidebar" aria-label="Menu principal">
+    <a class="sidebar-brand" href="{% url 'home' %}" aria-label="IntelIF - Home">
+      <img src="{% static 'intelif/img/logo-intelif.png' %}" alt="" class="sidebar-brand-logo">
+      <span>IntelIF</span>
+    </a>
+
+    <nav class="sidebar-nav">
+      <a href="{% url 'home' %}" class="nav-item {% block nav_home_active %}{% endblock %}">
+        <i class="fas fa-home"></i><span>Home</span>
+      </a>
+      <a href="{% url 'materias:listar_materias' %}" class="nav-item {% block nav_materias_active %}{% endblock %}">
+        <i class="fas fa-book"></i><span>Matérias</span>
+      </a>
+      <a href="{% url 'eventos:calendario' %}" class="nav-item {% block nav_calendario_active %}{% endblock %}">
+        <i class="fas fa-calendar-alt"></i><span>Calendário</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a href="{% url 'usuarios:perfil' %}" class="nav-item {% block nav_perfil_active %}{% endblock %}">
+        <i class="fas fa-user-circle"></i><span>Perfil</span>
+      </a>
+      <a href="{% url 'usuarios:logout' %}" class="nav-item nav-item-muted">
+        <i class="fas fa-arrow-right-from-bracket"></i><span>Sair</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="topbar">
+      <div class="topbar-heading">
+        <button class="sidebar-toggle d-lg-none" type="button" id="sidebarToggle" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <h1>{% block page_title %}Home{% endblock %}</h1>
+      </div>
+
+      <div class="topbar-right">
+        <a href="{% url 'eventos:calendario' %}" class="topbar-icon" title="Calendário" aria-label="Abrir calendário">
+          <i class="far fa-calendar"></i>
+        </a>
+
+        <div class="dropdown">
+          <button class="profile-button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="profile-name d-none d-sm-inline">{{ usuario.nome|default:'Perfil'|truncatechars:24 }}</span>
+            <span class="profile-avatar">
+              {% if usuario.foto %}
+                <img src="{{ usuario.foto }}" alt="Foto de {{ usuario.nome }}">
+              {% else %}
+                <i class="fas fa-user"></i>
+              {% endif %}
+            </span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 profile-menu">
+            <li><a class="dropdown-item" href="{% url 'usuarios:perfil' %}"><i class="fa-regular fa-user me-2"></i>Meu perfil</a></li>
+            <li><a class="dropdown-item" href="{% url 'eventos:calendario' %}"><i class="fa-regular fa-calendar me-2"></i>Calendário</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'usuarios:logout' %}"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Sair</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-wrap">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'intelif/js/dashboard.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

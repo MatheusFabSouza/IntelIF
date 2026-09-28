@@ -20,4 +20,4 @@ def lista_materias(request):
     for materia in materias:
         materia.proxima_aula = obter_proxima_aula(materia)
 
-    return render(request, "materias/lista_materias.html", {"materias": materias})
+    return render(request, "materias/lista_materias.html", {"materias": materias, "usuario": usuario})

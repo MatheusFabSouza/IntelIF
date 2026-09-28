@@ -1,0 +1,22 @@
+.profile-hero { display: flex; align-items: center; gap: 18px; background: #fff; border: 1px solid var(--if-border); border-radius: 14px; padding: 22px 24px; margin-bottom: 22px; box-shadow: 0 1px 5px rgba(15,23,42,.04); }
+.profile-photo { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; background: #e5e7eb; display: grid; place-items: center; color: #6b7280; font-size: 1.5rem; flex: 0 0 auto; }
+.profile-photo img { width: 100%; height: 100%; object-fit: cover; }
+.profile-hero h2 { margin: 0 0 4px; font-size: 1.35rem; font-weight: 750; }
+.profile-hero p { color: var(--if-muted); margin: 0; font-size: .87rem; }
+.profile-grid { display: grid; grid-template-columns: 1.3fr .9fr; gap: 22px; }
+.profile-section { background: #fff; border: 1px solid var(--if-border); border-radius: 14px; padding: 22px; box-shadow: 0 1px 5px rgba(15,23,42,.04); }
+.profile-section h3 { font-size: 1.02rem; font-weight: 750; margin: 0 0 18px; }
+.info-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+.info-item { background: #f9fafb; border: 1px solid #f0f1f3; border-radius: 10px; padding: 13px 14px; min-width: 0; }
+.info-item span { display: block; color: var(--if-muted); font-size: .72rem; font-weight: 650; margin-bottom: 4px; }
+.info-item strong { display: block; color: #374151; font-size: .85rem; font-weight: 650; overflow-wrap: anywhere; }
+.integration-card { border: 1px solid var(--if-border); border-radius: 12px; padding: 16px; }
+.integration-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.integration-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 10px; background: #f3f4f6; font-size: 1.1rem; color: #4285f4; }
+.integration-head h4 { margin: 0; font-size: .95rem; font-weight: 750; }
+.integration-card p { color: var(--if-muted); font-size: .8rem; line-height: 1.55; }
+.integration-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.profile-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 9px; background: var(--if-green); color: #fff; font-size: .78rem; font-weight: 650; }
+.profile-btn:hover { background: var(--if-green-dark); color: #fff; }
+@media (max-width: 991.98px) { .profile-grid { grid-template-columns: 1fr; } }
+@media (max-width: 575.98px) { .profile-hero { align-items: flex-start; padding: 18px; } .info-grid { grid-template-columns: 1fr; } }

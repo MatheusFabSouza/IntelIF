@@ -1,186 +1,50 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Perfil - IntelIF{% endblock %}
+{% block page_title %}Perfil{% endblock %}
+{% block nav_perfil_active %}active{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'intelif/css/profile.css' %}">{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Perfil</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            padding: 30px;
-            font-family: Arial, sans-serif;
-            background: #f5f6f8;
-            color: #222;
-        }
-
-        .perfil-container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .perfil-header {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-        }
-
-        .perfil-header h1 {
-            margin: 0 0 5px;
-        }
-
-        .perfil-header p {
-            margin: 0;
-            color: #666;
-        }
-
-        .secao {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-        }
-
-        .secao h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
-
-        .informacoes {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        .informacao {
-            padding: 15px;
-            background: #f7f7f7;
-            border-radius: 8px;
-        }
-
-        .informacao strong {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .integracoes {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .integracao-card {
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-        }
-
-        .integracao-card h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
-
-        .integracao-card p {
-            color: #666;
-            font-size: 14px;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="perfil-container">
-
-        <div class="perfil-header">
-            <h1>{{ usuario.nome }}</h1>
-            <p>Perfil do usuário</p>
-        </div>
-
-
-        <div class="secao">
-
-            <h2>Informações Pessoais</h2>
-
-            <div class="informacoes">
-
-                <div class="informacao">
-                    <strong>Nome</strong>
-                    {{ usuario.nome }}
-                </div>
-
-                <div class="informacao">
-                    <strong>E-mail</strong>
-                    {{ usuario.email }}
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="secao">
-
-            <h2>Informações Acadêmicas</h2>
-
-            <div class="informacoes">
-
-                <div class="informacao">
-                    <strong>Matrícula</strong>
-                    {{ usuario.matricula }}
-                </div>
-
-                <div class="informacao">
-                    <strong>Campus</strong>
-                    {{ usuario.campus }}
-                </div>
-
-                <div class="informacao">
-                    <strong>Curso</strong>
-                    {{ usuario.curso }}
-                </div>
-
-                <div class="informacao">
-                    <strong>Tipo de usuário</strong>
-                    {{ usuario.tipo_usuario }}
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="secao">
-
-            <h2>Integrações</h2>
-
-            <div class="integracoes">
-                <a href="{% url 'usuarios:sincronizar_classroom' %}" style="text-decoration: none; color: inherit;">
-                    <div class="integracao-card">
-
-                            <h3>Google Classroom</h3>
-
-                            <p>
-                                Sincronize suas atividades do Google Classroom
-                                com o calendário.
-                            </p>
-        
-                    </div>
-                </a>
-            </div>
-
-        </div>
-
+{% block content %}
+  <section class="profile-hero">
+    <div class="profile-photo">
+      {% if usuario.foto %}<img src="{{ usuario.foto }}" alt="Foto de {{ usuario.nome }}">{% else %}<i class="fa-regular fa-user"></i>{% endif %}
     </div>
+    <div>
+      <h2>{{ usuario.nome }}</h2>
+      <p>{{ usuario.tipo_usuario }}{% if usuario.campus %} · {{ usuario.campus }}{% endif %}</p>
+    </div>
+  </section>
 
-</body>
+  <div class="profile-grid">
+    <section class="profile-section">
+      <h3>Informações acadêmicas</h3>
+      <div class="info-grid">
+        <div class="info-item"><span>Nome</span><strong>{{ usuario.nome }}</strong></div>
+        <div class="info-item"><span>E-mail</span><strong>{{ usuario.email|default:"Não informado" }}</strong></div>
+        <div class="info-item"><span>Matrícula</span><strong>{{ usuario.matricula|default:"Não informada" }}</strong></div>
+        <div class="info-item"><span>Campus</span><strong>{{ usuario.campus|default:"Não informado" }}</strong></div>
+        <div class="info-item"><span>Curso</span><strong>{{ usuario.curso|default:"Não informado" }}</strong></div>
+        <div class="info-item"><span>Tipo de usuário</span><strong>{{ usuario.tipo_usuario }}</strong></div>
+      </div>
+    </section>
 
-</html>
+    <section class="profile-section">
+      <h3>Integrações</h3>
+      <div class="integration-card">
+        <div class="integration-head">
+          <div class="integration-icon"><i class="fa-brands fa-google"></i></div>
+          <div><h4>Google Classroom</h4><span class="status-pill {% if classroom_conectado %}ok{% else %}off{% endif %}">{% if classroom_conectado %}Conectado{% else %}Não conectado{% endif %}</span></div>
+        </div>
+        <p>Sincronize as atividades do Classroom para exibi-las no calendário e no resumo da página inicial.</p>
+        <div class="integration-actions">
+          {% if classroom_conectado %}
+            <a href="{% url 'usuarios:sincronizar_classroom' %}" class="profile-btn"><i class="fa-solid fa-rotate"></i> Sincronizar agora</a>
+          {% else %}
+            <a href="{% url 'usuarios:google_login' %}" class="profile-btn"><i class="fa-solid fa-link"></i> Conectar Classroom</a>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}

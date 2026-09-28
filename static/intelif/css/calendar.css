@@ -1,0 +1,17 @@
+.calendar-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 4px 0 22px; }
+.calendar-header h2 { font-size: 1.7rem; font-weight: 750; margin: 0 0 5px; }
+.calendar-header p { margin: 0; color: var(--if-muted); font-size: .9rem; }
+.calendar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.calendar-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 13px; border-radius: 10px; background: #fff; border: 1px solid var(--if-border); color: #374151; font-size: .82rem; font-weight: 650; }
+.calendar-btn.primary { background: var(--if-green); border-color: var(--if-green); color: #fff; }
+.calendar-btn:hover { border-color: #bbf7d0; color: var(--if-green-dark); }
+.calendar-btn.primary:hover { background: var(--if-green-dark); color: #fff; }
+.calendar-panel { background: #fff; border: 1px solid var(--if-border); border-radius: 14px; padding: 20px; box-shadow: 0 1px 5px rgba(15,23,42,.04); }
+#calendar { min-height: 660px; }
+.fc { --fc-border-color: #e5e7eb; --fc-button-bg-color: #16a34a; --fc-button-border-color: #16a34a; --fc-button-hover-bg-color: #15803d; --fc-button-hover-border-color: #15803d; --fc-button-active-bg-color: #166534; --fc-button-active-border-color: #166534; }
+.fc .fc-toolbar-title { font-size: 1.15rem; font-weight: 750; }
+.fc .fc-button { border-radius: 8px; font-size: .78rem; text-transform: capitalize; box-shadow: none !important; }
+.fc .fc-col-header-cell-cushion, .fc .fc-daygrid-day-number { color: #374151; text-decoration: none; }
+.fc .fc-event { border-radius: 5px; padding: 1px 3px; cursor: pointer; }
+.evento-tooltip { position: absolute; z-index: 1080; background: #111827; color: #fff; padding: 9px 11px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.18); max-width: 270px; font-size: .76rem; pointer-events: none; }
+@media (max-width: 767.98px) { .calendar-header { align-items: stretch; flex-direction: column; } .calendar-panel { padding: 12px; overflow-x: auto; } #calendar { min-width: 720px; } }
