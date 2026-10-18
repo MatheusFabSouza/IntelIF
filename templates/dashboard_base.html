@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="{% static 'intelif/css/dashboard.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
-<body class="dashboard-body">
+<body class="dashboard-body {% block body_class %}{% endblock %}">
   <div class="mobile-overlay" id="mobileOverlay" hidden></div>
 
   <aside class="sidebar" id="sidebar" aria-label="Menu principal">
@@ -91,3 +91,4 @@
   {% block extra_js %}{% endblock %}
 </body>
 </html>
+

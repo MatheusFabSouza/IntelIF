@@ -1,0 +1,19 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}{{ titulo_pagina }} - IntelIF{% endblock %}
+{% block page_title %}Matérias{% endblock %}
+{% block nav_materias_active %}active{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'intelif/css/materia-detalhes.css' %}">{% endblock %}
+{% block content %}
+  <div class="subject-detail-page">
+    <a class="subject-back" href="{% url 'materias:detalhes_materia' materia.id %}"><i class="fa-solid fa-chevron-left"></i> Voltar para {{ materia.descricao }}</a>
+    <section class="materia-form-card">
+      <h2>{{ titulo_pagina }}</h2>
+      <form method="post" class="materia-edit-form">
+        {% csrf_token %}
+        {% for field in form %}<div class="materia-form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}
+        <div class="materia-form-actions"><button class="topic-create-button" type="submit">Salvar tópico</button><a href="{% url 'materias:detalhes_materia' materia.id %}">Cancelar</a></div>
+      </form>
+    </section>
+  </div>
+{% endblock %}
