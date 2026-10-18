@@ -33,10 +33,10 @@
 
   <div class="subjects-grid" id="subjectsGrid">
     {% for materia in materias %}
-      <article class="subject-card" data-name="{{ materia.descricao|lower }}" data-next="{% if materia.proxima_aula %}yes{% else %}no{% endif %}">
+      <article class="subject-card" style="--subject-card-accent: {{ materia.cor }};" data-name="{{ materia.descricao|lower }}" data-next="{% if materia.proxima_aula %}yes{% else %}no{% endif %}">
         <div class="subject-card-body">
           <div class="subject-card-head">
-            <span class="subject-swatch"></span>
+            <span class="subject-swatch" style="background-color: {{ materia.cor }};">{% if materia.icone_imagem %}<img src="{{ materia.icone_imagem.url }}" alt="">{% elif materia.icone %}<i class="{{ materia.icone_css_class }}" aria-hidden="true"></i>{% endif %}</span>
             <div class="min-w-0">
               <h3>{{ materia.descricao }}</h3>
               <p>
@@ -59,7 +59,7 @@
             <div class="subject-stat">
               <i class="fa-solid fa-chart-simple"></i>
               <span>Status</span>
-              <strong class="subject-stat-value--status">—</strong>
+              <strong class="subject-stat-value--status subject-status--{{ materia.status }}">{{ materia.get_status_display }}</strong>
             </div>
           </div>
         </div>

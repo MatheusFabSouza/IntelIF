@@ -1,0 +1,38 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}{{ titulo_pagina }} - IntelIF{% endblock %}
+{% block page_title %}Matérias{% endblock %}
+{% block nav_materias_active %}active{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'intelif/css/materia-detalhes.css' %}">{% endblock %}
+{% block content %}
+  <div class="subject-detail-page">
+    <a class="subject-back" href="{% url 'materias:detalhes_materia' materia.id %}"><i class="fa-solid fa-chevron-left"></i> Voltar para {{ materia.descricao }}</a>
+    <section class="materia-form-card">
+      <h2>{{ titulo_pagina }} <span>· {{ topico.titulo }}</span></h2>
+      <form method="post" enctype="multipart/form-data" class="materia-edit-form" id="contentForm">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="materia-form-field" {% if field.name == 'arquivo' %}data-type-fields="arquivo"{% elif field.name == 'link' %}data-type-fields="link"{% elif field.name == 'anotacao' %}data-type-fields="anotacao"{% endif %}>
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.name == 'arquivo' and conteudo.arquivo %}<small>Arquivo atual: {{ conteudo.arquivo.name|cut:"materias/conteudos/" }}. Selecione outro arquivo para substituir.</small>{% endif %}
+            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+            {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+          </div>
+        {% endfor %}
+        <div class="materia-form-actions"><button class="topic-create-button" type="submit">Salvar conteúdo</button><a href="{% url 'materias:detalhes_materia' materia.id %}">Cancelar</a></div>
+      </form>
+    </section>
+  </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const type = document.querySelector('[data-content-type]');
+  const groups = document.querySelectorAll('[data-type-fields]');
+  const update = () => groups.forEach((group) => { group.hidden = group.dataset.typeFields !== type.value; });
+  type?.addEventListener('change', update);
+  update();
+});
+</script>
+{% endblock %}

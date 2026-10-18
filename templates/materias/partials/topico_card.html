@@ -1,0 +1,14 @@
+<details class="topic-card" data-topic-id="{{ topico.id }}" open>
+  <summary class="topic-heading">
+    <i class="fa-solid fa-chevron-right topic-chevron" aria-hidden="true"></i>
+    <span class="topic-heading-text"><strong>{{ topico.titulo }}</strong><small><span class="topic-content-count">{{ topico.conteudos.all|length }}</span> conteúdo{{ topico.conteudos.all|length|pluralize }} · Criado em {{ topico.criado_em|date:"d/m/Y" }}</small></span>
+    <span class="topic-actions-inline">
+      <button type="button" data-edit-topic data-edit-url="{% url 'materias:editar_topico' materia.id topico.id %}" data-topic-title="{{ topico.titulo }}" aria-label="Editar tópico {{ topico.titulo }}" title="Editar tópico"><i class="fa-regular fa-pen-to-square"></i></button>
+      <button type="button" data-confirm-delete data-delete-kind="topico" data-delete-id="{{ topico.id }}" data-delete-url="{% url 'materias:excluir_topico' materia.id topico.id %}" data-object-name="{{ topico.titulo }}" aria-label="Excluir tópico {{ topico.titulo }}" title="Excluir tópico"><i class="fa-regular fa-trash-can"></i></button>
+    </span>
+  </summary>
+  <div class="topic-content-list">
+    {% for conteudo in topico.conteudos.all %}{% include "materias/partials/conteudo_row.html" %}{% empty %}<p class="topic-no-content">Este tópico ainda não tem conteúdos.</p>{% endfor %}
+    <button type="button" class="content-add-link" data-open-content-modal data-create-url="{% url 'materias:criar_conteudo' materia.id topico.id %}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar conteúdo</button>
+  </div>
+</details>

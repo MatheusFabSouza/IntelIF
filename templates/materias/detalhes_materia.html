@@ -1,35 +1,440 @@
-<h1>{{ materia.descricao }}</h1>
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-<h2>Professores</h2>
+{% block title %}{{ materia.descricao }} - IntelIF{% endblock %}
+{% block body_class %}subject-detail-view{% endblock %}
+{% block page_title %}{% endblock %}
+{% block nav_materias_active %}active{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'intelif/css/materia-detalhes.css' %}">{% endblock %}
 
-{% for professor in materia.professores.all %}
-    <p>{{ professor.nome }}</p>
-{% empty %}
-    <p>Nenhum professor cadastrado.</p>
-{% endfor %}
+{% block content %}
+  <div class="subject-detail-page">
+    <a class="subject-back" href="{% url 'materias:listar_materias' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i> Voltar</a>
 
-<h2>Horários</h2>
+    <section class="subject-detail-header" aria-labelledby="subject-title">
+      <div class="subject-identity">
+        <span class="subject-detail-swatch" style="background-color: {{ materia.cor }};" aria-hidden="true">{% if materia.icone_imagem %}<img src="{{ materia.icone_imagem.url }}" alt="">{% elif materia.icone %}<i class="{{ materia.icone_css_class }}"></i>{% endif %}</span>
+        <div><h2 id="subject-title">{{ materia.descricao }}</h2><p>{% for professor in materia.professores.all %}{{ professor.nome }}{% if not forloop.last %}, {% endif %}{% empty %}Professor não informado{% endfor %}</p><p id="subjectPersonalDescription" class="subject-personal-description" {% if not materia.descricao_pessoal %}hidden{% endif %}>{{ materia.descricao_pessoal }}</p></div>
+      </div>
+      <div class="subject-detail-controls">
+        <form method="post" class="subject-status-form">
+          {% csrf_token %}<label for="subjectStatus">Status da matéria</label>
+          <div class="subject-status-control status-{{ materia.status }}"><span class="status-dot" aria-hidden="true"></span><select id="subjectStatus" name="status" aria-label="Status da matéria" onchange="this.form.submit()">{% for valor, rotulo in status_choices %}<option value="{{ valor }}" {% if materia.status == valor %}selected{% endif %}>{{ rotulo }}</option>{% endfor %}</select></div>
+        </form>
+        <button type="button" class="subject-edit-button" data-open-edit-materia><i class="fa-solid fa-pen" aria-hidden="true"></i> Editar matéria</button>
+      </div>
+    </section>
 
-{% for horario in materia.horarios.all %}
-    <p>
-        {{ horario.dia }}
-        —
-        {{ horario.hora_inicio|time:"H:i" }}
-        às
-        {{ horario.hora_fim|time:"H:i" }}
-    </p>
-{% empty %}
-    <p>Nenhum horário cadastrado.</p>
-{% endfor %}
+    <nav class="subject-content-tabs" aria-label="Seções da matéria"><a class="is-active" href="#meus-conteudos" aria-current="page">Meus conteúdos</a><span>Arquivos, links e anotações</span></nav>
 
-<h2>Próxima aula</h2>
+    <form method="get" class="content-filter-panel" aria-label="Filtrar conteúdos">
+      <label>Filtrar por data<input type="date" name="data" value="{{ filtros.data }}"></label>
+      <label>Bimestre/Período<select name="periodo"><option value="">Todos</option>{% for periodo in periodo_choices %}<option value="{{ periodo }}" {% if filtros.periodo == periodo %}selected{% endif %}>{{ periodo }}</option>{% endfor %}</select></label>
+      <label>Tipo de conteúdo<select name="tipo"><option value="">Todos</option>{% for valor, rotulo in tipo_choices %}<option value="{{ valor }}" {% if filtros.tipo == valor %}selected{% endif %}>{{ rotulo }}</option>{% endfor %}</select></label>
+      <label class="content-search"><span>Buscar conteúdo</span><span class="search-input-wrap"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input type="search" name="q" value="{{ filtros.q }}" placeholder="Buscar conteúdo..."></span></label>
+      <div class="filter-actions"><button type="submit" class="filter-submit">Filtrar</button>{% if filtros_ativos %}<a href="{% url 'materias:detalhes_materia' materia.id %}">Limpar</a>{% endif %}</div>
+    </form>
 
-{% if materia.proxima_aula %}
-    <p>
-        {{ materia.proxima_aula|date:"d/m/Y" }}
-        às
-        {{ materia.proxima_aula|time:"H:i" }}
-    </p>
-{% else %}
-    <p>Sem horário cadastrado.</p>
-{% endif %}
+    <div class="topic-actions"><button type="button" class="topic-create-button" data-open-topic-modal><i class="fa-solid fa-plus" aria-hidden="true"></i> Novo tópico</button></div>
+
+    <section id="meus-conteudos" class="topics-list" aria-label="Tópicos e conteúdos">
+      {% for topico in topicos %}{% include "materias/partials/topico_card.html" %}
+      {% empty %}<div class="topics-empty"><h3>{% if filtros_ativos %}Nenhum conteúdo encontrado{% else %}Você ainda não criou tópicos{% endif %}</h3><p>{% if filtros_ativos %}Altere os filtros ou limpe a busca para tentar novamente.{% else %}Crie um tópico para começar a organizar arquivos, links e anotações desta matéria.{% endif %}</p>{% if not filtros_ativos %}<button type="button" class="topic-create-button" data-open-topic-modal><i class="fa-solid fa-plus" aria-hidden="true"></i> Criar primeiro tópico</button>{% endif %}</div>{% endfor %}
+    </section>
+  </div>
+
+  <div class="feature-modal-backdrop" id="editMateriaModal" hidden>
+    <section class="feature-modal materia-edit-modal" role="dialog" aria-modal="true" aria-labelledby="editMateriaTitle">
+      <button type="button" class="feature-modal-close" data-close-modal aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      <h2 id="editMateriaTitle">Editar matéria</h2>
+      <div class="materia-institutional-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Nome da matéria e professor são definidos pela instituição e não podem ser editados.</span></div>
+      <form id="editMateriaForm" method="post" enctype="multipart/form-data" action="{% url 'materias:editar_materia' materia.id %}">
+        {% csrf_token %}
+        <div class="materia-locked-fields">
+          <label>Nome da matéria<input type="text" value="{{ materia.descricao }}" disabled></label>
+          <label>Professor<input type="text" value="{% for professor in materia.professores.all %}{{ professor.nome }}{% if not forloop.last %}, {% endif %}{% empty %}Professor não informado{% endfor %}" disabled></label>
+        </div>
+        <fieldset class="materia-color-picker"><legend>Cor da matéria</legend>
+          {% for color in materia_color_choices %}<label class="materia-color-option" title="{{ color.label }}"><input type="radio" name="cor_option" value="{{ color.value }}" data-materia-color {% if materia.cor == color.value %}checked{% endif %}><span style="background-color: {{ color.value }};"></span><span class="visually-hidden">{{ color.label }}</span></label>{% endfor %}
+          <label class="materia-custom-color" title="Escolher outra cor"><i class="fa-solid fa-plus" aria-hidden="true"></i><input id="customMateriaColor" type="color" value="{{ materia.cor }}" aria-label="Escolher outra cor"></label>
+          <input id="materiaColorValue" type="hidden" name="cor" value="{{ materia.cor }}">
+        </fieldset>
+        <label class="modal-field">Descrição (opcional)<textarea name="descricao_pessoal" rows="4" maxlength="500" placeholder="Adicione uma descrição para esta matéria">{{ materia.descricao_pessoal }}</textarea></label>
+        <fieldset class="materia-icon-picker"><legend>Ícone da matéria</legend><p>Escolha um ícone ou envie uma imagem.</p>
+          <div class="materia-icon-options">{% for value, label in icone_choices %}<label class="materia-icon-option" title="{{ label }}"><input type="radio" name="icone" value="{{ value }}" {% if materia.icone == value %}checked{% endif %}><i class="{% if value == '' %}fa-solid fa-ban{% elif value == 'calculator' %}fa-solid fa-calculator{% elif value == 'globe' %}fa-solid fa-globe{% elif value == 'database' %}fa-solid fa-database{% elif value == 'book' %}fa-solid fa-book{% elif value == 'flask' %}fa-solid fa-flask{% elif value == 'code' %}fa-solid fa-code{% elif value == 'atom' %}fa-solid fa-atom{% else %}fa-solid fa-leaf{% endif %}" aria-hidden="true"></i></label>{% endfor %}</div>
+          <div id="materiaImageState" class="current-materia-icon" data-has-saved-image="{% if materia.icone_imagem %}true{% else %}false{% endif %}" {% if not materia.icone_imagem %}hidden{% endif %}>
+            <span id="materiaImageStateText">{% if materia.icone_imagem %}Imagem atual:{% endif %}</span>
+            {% if materia.icone_imagem %}<img id="currentMateriaIconPreview" src="{{ materia.icone_imagem.url }}" alt="Ícone atual da matéria">{% endif %}
+            <button type="button" id="removeMateriaIconImage" {% if not materia.icone_imagem %}hidden{% endif %}>Remover imagem</button>
+          </div>
+          <label class="materia-image-upload"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i><span>Enviar imagem</span><small>PNG, JPG ou SVG · máx. 2 MB</small><input id="materiaIconImage" type="file" name="icone_imagem" accept=".png,.jpg,.jpeg,.svg"></label>
+          <input id="clearMateriaIconImage" type="hidden" name="limpar_icone_imagem" value="0">
+        </fieldset>
+        <p class="modal-error" role="alert" hidden></p>
+        <div class="feature-modal-actions"><button type="button" class="modal-cancel" data-close-modal>Cancelar</button><button type="submit" class="modal-submit" style="display: inline-flex !important; visibility: visible !important; opacity: 1 !important; position: static !important; width: 100%; min-height: 46px; align-items: center; justify-content: center; border: 1px solid #099b63; border-radius: 7px; background: #099b63; color: #fff; font: inherit; font-weight: 650; cursor: pointer;">Salvar alterações</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="feature-modal-backdrop" id="topicModal" hidden>
+    <section class="feature-modal feature-modal-compact" role="dialog" aria-modal="true" aria-labelledby="topicModalTitle">
+      <button type="button" class="feature-modal-close" data-close-modal aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      <h2 id="topicModalTitle">Novo tópico</h2>
+      <form id="topicModalForm" method="post" data-create-url="{% url 'materias:criar_topico' materia.id %}" action="{% url 'materias:criar_topico' materia.id %}">
+        {% csrf_token %}<label for="topicName">Nome do tópico</label><input id="topicName" name="titulo" maxlength="160" required autocomplete="off" placeholder="Ex.: Fundamentos da Idade Moderna">
+        <p class="modal-help">O tópico vai organizar os conteúdos desta matéria.</p><p class="modal-error" role="alert" hidden></p>
+        <div class="feature-modal-actions"><button type="button" class="modal-cancel" data-close-modal>Cancelar</button><button type="submit" class="modal-submit" style="display: inline-flex !important; visibility: visible !important; opacity: 1 !important; position: static !important; width: 100%; min-height: 46px; align-items: center; justify-content: center; border: 1px solid #099b63; border-radius: 7px; background: #099b63; color: #fff; font: inherit; font-weight: 650; cursor: pointer;">Criar tópico</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="feature-modal-backdrop" id="contentModal" hidden>
+    <section class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="contentModalTitle">
+      <button type="button" class="feature-modal-close" data-close-modal aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      <h2 id="contentModalTitle">Adicionar conteúdo</h2>
+      <form id="contentModalForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <fieldset class="content-type-picker"><legend>Tipo de conteúdo</legend>
+          <label class="content-type-option is-selected"><input type="radio" name="tipo" value="arquivo" checked><i class="fa-regular fa-file-lines"></i> Arquivo</label>
+          <label class="content-type-option"><input type="radio" name="tipo" value="link"><i class="fa-solid fa-link"></i> Link</label>
+          <label class="content-type-option"><input type="radio" name="tipo" value="anotacao"><i class="fa-solid fa-pen"></i> Anotação</label>
+        </fieldset>
+        <label class="modal-field">Nome do conteúdo<input type="text" name="titulo" maxlength="200" required placeholder="Ex.: Slides da aula 1"><small>Nome que aparecerá na lista de conteúdos</small></label>
+        <label class="modal-field content-input-group" data-content-group="arquivo">Arquivo<input type="file" name="arquivo" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.odt,.ods,.odp,.txt,.md,.png,.jpg,.jpeg"><small class="file-input-help">PDF, documentos, planilhas, apresentações ou imagens.</small><small class="existing-file-note" hidden></small></label>
+        <label class="modal-field content-input-group" data-content-group="link" hidden>Endereço do link<input type="url" name="link" placeholder="https://"></label>
+        <label class="modal-field content-input-group" data-content-group="anotacao" hidden>Anotação<textarea name="anotacao" rows="5" placeholder="Escreva sua anotação"></textarea></label>
+        <label class="modal-field">Bimestre/Período (opcional)<input type="text" name="periodo" maxlength="40" placeholder="Ex.: 1º Bimestre"></label>
+        <p class="modal-error" role="alert" hidden></p>
+        <div class="feature-modal-actions"><button type="button" class="modal-cancel" data-close-modal>Cancelar</button><button type="submit" class="modal-submit" style="display: inline-flex !important; visibility: visible !important; opacity: 1 !important; position: static !important; width: 100%; min-height: 46px; align-items: center; justify-content: center; border: 1px solid #099b63; border-radius: 7px; background: #099b63; color: #fff; font: inherit; font-weight: 650; cursor: pointer;">Adicionar conteúdo</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="feature-modal-backdrop" id="deleteModal" hidden>
+    <section class="feature-modal feature-modal-compact" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+      <button type="button" class="feature-modal-close" data-close-modal aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      <h2 id="deleteModalTitle">Confirmar exclusão</h2>
+      <form id="deleteModalForm" method="post">
+        {% csrf_token %}<p class="delete-modal-copy">Deseja excluir <strong id="deleteObjectName"></strong>? Esta ação não pode ser desfeita.</p>
+        <p class="modal-error" role="alert" hidden></p>
+        <div class="feature-modal-actions"><button type="button" class="modal-cancel" data-close-modal>Cancelar</button><button type="submit" class="modal-delete" style="display: inline-flex !important; visibility: visible !important; opacity: 1 !important; position: static !important; width: 100%; min-height: 46px; align-items: center; justify-content: center; border: 1px solid #c62828; border-radius: 7px; background: #c62828; color: #fff; font: inherit; font-weight: 650; cursor: pointer;">Excluir</button></div>
+      </form>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const topicModal = document.getElementById('topicModal');
+  const contentModal = document.getElementById('contentModal');
+  const deleteModal = document.getElementById('deleteModal');
+  const editMateriaModal = document.getElementById('editMateriaModal');
+  const topicForm = document.getElementById('topicModalForm');
+  const contentForm = document.getElementById('contentModalForm');
+  const deleteForm = document.getElementById('deleteModalForm');
+  const editMateriaForm = document.getElementById('editMateriaForm');
+  const topicsList = document.querySelector('.topics-list');
+  let activeModal = null;
+
+  const openModal = (modal) => {
+    activeModal = modal;
+    modal.hidden = false;
+    document.body.classList.add('modal-open');
+    modal.querySelector('input:not([type="hidden"]):not([type="radio"]):not(:disabled), textarea:not(:disabled)')?.focus();
+  };
+  const closeModal = (modal) => {
+    modal.hidden = true;
+    document.body.classList.remove('modal-open');
+    activeModal = null;
+  };
+  document.addEventListener('click', (event) => {
+    const topicButton = event.target.closest('[data-open-topic-modal]');
+    if (topicButton) {
+      topicForm.reset();
+      topicForm.action = topicForm.dataset.createUrl;
+      topicForm.dataset.mode = 'create';
+      document.getElementById('topicModalTitle').textContent = 'Novo tópico';
+      topicForm.querySelector('[type="submit"]').textContent = 'Criar tópico';
+      topicForm.querySelector('.modal-error').hidden = true;
+      openModal(topicModal);
+      return;
+    }
+    const contentButton = event.target.closest('[data-open-content-modal]');
+    if (contentButton) {
+      contentForm.action = contentButton.dataset.createUrl;
+      contentForm.reset();
+      contentForm.dataset.mode = 'create';
+      contentForm.dataset.hasFile = 'false';
+      document.getElementById('contentModalTitle').textContent = 'Adicionar conteúdo';
+      contentForm.querySelector('[type="submit"]').textContent = 'Adicionar conteúdo';
+      contentForm.querySelector('.existing-file-note').hidden = true;
+      contentForm.querySelector('[name="tipo"][value="arquivo"]').checked = true;
+      updateContentType();
+      contentForm.querySelector('.modal-error').hidden = true;
+      openModal(contentModal);
+      return;
+    }
+    const editTopicButton = event.target.closest('[data-edit-topic]');
+    if (editTopicButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      topicForm.reset();
+      topicForm.action = editTopicButton.dataset.editUrl;
+      topicForm.dataset.mode = 'edit';
+      topicForm.querySelector('[name="titulo"]').value = editTopicButton.dataset.topicTitle;
+      document.getElementById('topicModalTitle').textContent = 'Editar tópico';
+      topicForm.querySelector('[type="submit"]').textContent = 'Salvar alterações';
+      topicForm.querySelector('.modal-error').hidden = true;
+      openModal(topicModal);
+      return;
+    }
+    const editContentButton = event.target.closest('[data-edit-content]');
+    if (editContentButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      contentForm.reset();
+      contentForm.action = editContentButton.dataset.editUrl;
+      contentForm.dataset.mode = 'edit';
+      contentForm.dataset.hasFile = editContentButton.dataset.contentFile ? 'true' : 'false';
+      contentForm.querySelector('[name="titulo"]').value = editContentButton.dataset.contentTitle;
+      contentForm.querySelector(`[name="tipo"][value="${editContentButton.dataset.contentType}"]`).checked = true;
+      contentForm.querySelector('[name="periodo"]').value = editContentButton.dataset.contentPeriod;
+      contentForm.querySelector('[name="link"]').value = editContentButton.dataset.contentLink;
+      contentForm.querySelector('[name="anotacao"]').value = editContentButton.dataset.contentNote;
+      document.getElementById('contentModalTitle').textContent = 'Editar conteúdo';
+      contentForm.querySelector('[type="submit"]').textContent = 'Salvar alterações';
+      const existingFileNote = contentForm.querySelector('.existing-file-note');
+      existingFileNote.textContent = editContentButton.dataset.contentFile ? `Arquivo atual: ${editContentButton.dataset.contentFile}. Selecione outro somente se quiser substituí-lo.` : '';
+      existingFileNote.hidden = !editContentButton.dataset.contentFile;
+      contentForm.querySelector('.modal-error').hidden = true;
+      updateContentType();
+      openModal(contentModal);
+      return;
+    }
+    const deleteButton = event.target.closest('[data-confirm-delete]');
+    if (deleteButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      deleteForm.action = deleteButton.dataset.deleteUrl;
+      deleteForm.dataset.deleteKind = deleteButton.dataset.deleteKind;
+      deleteForm.dataset.deleteId = deleteButton.dataset.deleteId;
+      document.getElementById('deleteObjectName').textContent = deleteButton.dataset.objectName;
+      deleteForm.querySelector('.modal-error').hidden = true;
+      openModal(deleteModal);
+    }
+  });
+  document.querySelectorAll('[data-close-modal]').forEach((button) => button.addEventListener('click', () => closeModal(button.closest('.feature-modal-backdrop'))));
+  [topicModal, contentModal, editMateriaModal, deleteModal].forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(modal); }));
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && activeModal) closeModal(activeModal); });
+
+  function updateContentType() {
+    const selected = contentForm.querySelector('[name="tipo"]:checked')?.value;
+    contentForm.querySelectorAll('.content-type-option').forEach((label) => label.classList.toggle('is-selected', label.querySelector('input').checked));
+    contentForm.querySelectorAll('[data-content-group]').forEach((group) => {
+      const visible = group.dataset.contentGroup === selected;
+      group.hidden = !visible;
+      const input = group.querySelector('input, textarea');
+      if (input) input.required = visible && !(selected === 'arquivo' && input.type === 'file' && contentForm.dataset.mode === 'edit' && contentForm.dataset.hasFile === 'true');
+    });
+  }
+
+  function updateTopicContentCount(topic, value) {
+    const label = topic?.querySelector('.topic-heading-text small');
+    const count = label?.querySelector('.topic-content-count');
+    if (!label || !count) return;
+    const createdText = label.textContent.split('· Criado em ').pop().trim();
+    count.textContent = value;
+    label.replaceChildren(count, document.createTextNode(` conteúdo${value === 1 ? '' : 's'} · Criado em ${createdText}`));
+  }
+
+  document.addEventListener('click', (event) => {
+    if (event.target.closest('[data-open-edit-materia]')) {
+      editMateriaForm.reset();
+      editMateriaForm.querySelector('.modal-error').hidden = true;
+      document.getElementById('materiaColorValue').value = '{{ materia.cor }}';
+      document.getElementById('clearMateriaIconImage').value = '0';
+      restoreMateriaImageState();
+      openModal(editMateriaModal);
+    }
+  });
+  editMateriaForm.querySelectorAll('[data-materia-color]').forEach((input) => input.addEventListener('change', () => {
+    document.getElementById('materiaColorValue').value = input.value;
+    document.getElementById('customMateriaColor').value = input.value;
+  }));
+  document.getElementById('customMateriaColor').addEventListener('input', (event) => {
+    document.getElementById('materiaColorValue').value = event.target.value.toUpperCase();
+    editMateriaForm.querySelectorAll('[data-materia-color]').forEach((input) => { input.checked = input.value.toUpperCase() === event.target.value.toUpperCase(); });
+  });
+  function restoreMateriaImageState() {
+    const imageState = document.getElementById('materiaImageState');
+    const hasSavedImage = imageState.dataset.hasSavedImage === 'true';
+    imageState.hidden = !hasSavedImage;
+    document.getElementById('materiaImageStateText').textContent = hasSavedImage ? 'Imagem atual:' : '';
+    document.getElementById('currentMateriaIconPreview')?.removeAttribute('hidden');
+    document.getElementById('removeMateriaIconImage').hidden = !hasSavedImage;
+  }
+  editMateriaForm.querySelectorAll('[name="icone"]').forEach((input) => input.addEventListener('change', () => {
+    document.getElementById('clearMateriaIconImage').value = '1';
+    document.getElementById('materiaIconImage').value = '';
+    document.getElementById('materiaImageState').hidden = true;
+  }));
+  document.getElementById('materiaIconImage').addEventListener('change', (event) => {
+    const imageState = document.getElementById('materiaImageState');
+    const selectedFile = event.target.files[0];
+    document.getElementById('clearMateriaIconImage').value = '0';
+    if (!selectedFile) { restoreMateriaImageState(); return; }
+    imageState.hidden = false;
+    document.getElementById('materiaImageStateText').textContent = `Nova imagem selecionada: ${selectedFile.name}`;
+    document.getElementById('currentMateriaIconPreview')?.setAttribute('hidden', '');
+    document.getElementById('removeMateriaIconImage').hidden = false;
+  });
+  document.getElementById('removeMateriaIconImage').addEventListener('click', () => {
+    document.getElementById('materiaIconImage').value = '';
+    document.getElementById('clearMateriaIconImage').value = '1';
+    document.getElementById('materiaImageState').hidden = true;
+  });
+  editMateriaForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    ajaxSubmit(editMateriaForm, (result) => {
+      const swatch = document.querySelector('.subject-detail-swatch');
+      swatch.style.backgroundColor = result.cor;
+      swatch.replaceChildren();
+      if (result.icone_imagem_url) {
+        const image = document.createElement('img');
+        image.src = result.icone_imagem_url;
+        image.alt = '';
+        swatch.append(image);
+      } else if (result.icone) {
+        const icon = document.createElement('i');
+        icon.className = result.icone;
+        swatch.append(icon);
+      }
+      const description = document.getElementById('subjectPersonalDescription');
+      description.textContent = result.descricao_pessoal;
+      description.hidden = !result.descricao_pessoal;
+    });
+  });
+  contentForm.querySelectorAll('[name="tipo"]').forEach((input) => input.addEventListener('change', updateContentType));
+  updateContentType();
+
+  const showErrors = (form, errors) => {
+    const box = form.querySelector('.modal-error');
+    const messages = Object.values(errors || {}).flat().map((error) => error.message);
+    box.textContent = messages.join(' ');
+    box.hidden = messages.length === 0;
+  };
+  const ajaxSubmit = async (form, onSuccess) => {
+    showErrors(form, {});
+    const submit = form.querySelector('[type="submit"]');
+    submit.disabled = true;
+    try {
+      const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      const result = await response.json();
+      if (!response.ok || !result.ok) { showErrors(form, result.errors); return; }
+      closeModal(form.closest('.feature-modal-backdrop'));
+      form.reset();
+      try {
+        onSuccess(result);
+      } catch (error) {
+        console.error('O item foi salvo, mas a lista precisou ser recarregada.', error);
+        window.location.reload();
+      }
+    } catch (error) {
+      showErrors(form, { request: [{ message: 'Não foi possível salvar agora. Tente novamente.' }] });
+    } finally { submit.disabled = false; }
+  };
+
+  topicForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    ajaxSubmit(topicForm, (result) => {
+      if (topicForm.dataset.mode === 'edit') {
+        const topicId = new URL(topicForm.action).pathname.match(/topicos\/([0-9a-f-]+)\/editar/)[1];
+        const oldTopic = topicsList.querySelector(`[data-topic-id="${topicId}"]`);
+        if (oldTopic) {
+          const wasOpen = oldTopic.open;
+          oldTopic.outerHTML = result.html;
+          const replacement = topicsList.querySelector(`[data-topic-id="${topicId}"]`);
+          if (replacement) replacement.open = wasOpen;
+        }
+      } else {
+        topicsList.querySelector('.topics-empty')?.remove();
+        topicsList.insertAdjacentHTML('afterbegin', result.html);
+      }
+    });
+  });
+  contentForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    ajaxSubmit(contentForm, (result) => {
+      if (contentForm.dataset.mode === 'edit') {
+        const contentId = new URL(contentForm.action).pathname.match(/conteudos\/([0-9a-f-]+)\/editar/)[1];
+        const oldRow = topicsList.querySelector(`[data-content-id="${contentId}"]`);
+        if (oldRow) oldRow.outerHTML = result.html;
+        return;
+      }
+      const topicId = new URL(contentForm.action).pathname.match(/topicos\/([0-9a-f-]+)\/conteudos/)[1];
+      const topic = topicsList.querySelector(`[data-topic-id="${topicId}"]`);
+      if (!topic) return;
+      topic.querySelector('.topic-no-content')?.remove();
+      const list = topic.querySelector('.topic-content-list');
+      list.querySelector('.content-add-link').insertAdjacentHTML('beforebegin', result.html);
+      const count = topic.querySelector('.topic-content-count');
+      if (count) updateTopicContentCount(topic, Number(count.textContent) + 1);
+      topic.open = true;
+    });
+  });
+  deleteForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submit = deleteForm.querySelector('[type="submit"]');
+    if (submit.disabled) return;
+    submit.disabled = true;
+    try {
+      const response = await fetch(deleteForm.action, { method: 'POST', body: new FormData(deleteForm), headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      let result;
+      try { result = await response.json(); }
+      catch { throw new Error('O servidor não retornou uma resposta válida. Atualize a página e tente novamente.'); }
+      if (!response.ok || !result.ok) throw new Error(result.error || 'Não foi possível excluir. Atualize a página e tente novamente.');
+
+      // A exclusão já foi confirmada pelo servidor; fecha o modal antes de qualquer atualização visual.
+      closeModal(deleteModal);
+      if (result.kind === 'topico') {
+        topicsList.querySelector(`[data-topic-id="${result.id}"]`)?.remove();
+      } else {
+        const row = topicsList.querySelector(`[data-content-id="${result.id}"]`);
+        const topic = row?.closest('.topic-card');
+        row?.remove();
+        if (topic) {
+          const remainingRows = topic.querySelectorAll('.content-row').length;
+          updateTopicContentCount(topic, remainingRows);
+          if (remainingRows === 0 && !topic.querySelector('.topic-no-content')) {
+            const empty = document.createElement('p');
+            empty.className = 'topic-no-content';
+            empty.textContent = 'Este tópico ainda não tem conteúdos.';
+            topic.querySelector('.content-add-link')?.before(empty);
+          }
+        }
+      }
+      if (!topicsList.querySelector('.topic-card')) {
+        const empty = document.createElement('div');
+        empty.className = 'topics-empty';
+        empty.innerHTML = '<h3>Você ainda não criou tópicos</h3><p>Use o botão “Novo tópico” para organizar os conteúdos desta matéria.</p>';
+        topicsList.append(empty);
+      }
+    } catch (error) {
+      const box = deleteForm.querySelector('.modal-error');
+      if (box) {
+        box.textContent = error.message;
+        box.hidden = false;
+      }
+    } finally { submit.disabled = false; }
+  });
+});
+</script>
+{% endblock %}
+
+
+
+
+
+
+

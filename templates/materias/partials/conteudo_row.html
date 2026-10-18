@@ -1,0 +1,19 @@
+<article class="content-row" data-content-id="{{ conteudo.id }}">
+  <span class="content-type-icon type-{{ conteudo.tipo }}" aria-hidden="true">
+    {% if conteudo.tipo == 'arquivo' %}<i class="fa-regular fa-file-lines"></i>{% elif conteudo.tipo == 'link' %}<i class="fa-solid fa-link"></i>{% else %}<i class="fa-regular fa-note-sticky"></i>{% endif %}
+  </span>
+  <div class="content-row-main">
+    <div class="content-row-title">
+      {% if conteudo.tipo == 'arquivo' %}<a href="{% url 'materias:baixar_conteudo' conteudo.id %}" target="_blank">{{ conteudo.titulo }}</a>{% elif conteudo.tipo == 'link' %}<a href="{{ conteudo.link }}" target="_blank" rel="noopener noreferrer">{{ conteudo.titulo }}</a>{% else %}<strong>{{ conteudo.titulo }}</strong>{% endif %}
+      <span class="content-type-badge badge-{{ conteudo.tipo }}">{{ conteudo.get_tipo_display }}</span>
+      {% if conteudo.periodo %}<span class="content-period-badge">{{ conteudo.periodo }}</span>{% endif %}
+    </div>
+    {% if conteudo.tipo == 'anotacao' %}<p class="content-note">{{ conteudo.anotacao|linebreaksbr }}</p>{% endif %}
+    {% if conteudo.tipo == 'arquivo' %}<small>{{ conteudo.arquivo.name|cut:"materias/conteudos/" }}</small>{% endif %}
+    <small>Adicionado em {{ conteudo.adicionado_em|date:"d/m/Y" }}</small>
+  </div>
+  <span class="content-row-actions">
+    <button type="button" data-edit-content data-edit-url="{% url 'materias:editar_conteudo' materia.id conteudo.id %}" data-content-title="{{ conteudo.titulo }}" data-content-type="{{ conteudo.tipo }}" data-content-period="{{ conteudo.periodo }}" data-content-link="{{ conteudo.link }}" data-content-note="{{ conteudo.anotacao }}" data-content-file="{% if conteudo.arquivo %}{{ conteudo.arquivo.name|cut:'materias/conteudos/' }}{% endif %}" aria-label="Editar {{ conteudo.titulo }}" title="Editar conteúdo"><i class="fa-regular fa-pen-to-square"></i></button>
+    <button type="button" data-confirm-delete data-delete-kind="conteudo" data-delete-id="{{ conteudo.id }}" data-delete-url="{% url 'materias:excluir_conteudo' materia.id conteudo.id %}" data-object-name="{{ conteudo.titulo }}" aria-label="Excluir {{ conteudo.titulo }}" title="Excluir conteúdo"><i class="fa-regular fa-trash-can"></i></button>
+  </span>
+</article>
