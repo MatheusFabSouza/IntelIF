@@ -7,84 +7,248 @@
 
 {% block content %}
   <div class="calendar-header">
-    <div><h2>Calendário</h2><p>Eventos do IntelIF e atividades sincronizadas do Google Classroom.</p></div>
+    <div><h2>Calendário acadêmico</h2><p>Acompanhe seus eventos e prazos em um só lugar.</p></div>
     <div class="calendar-actions">
-      <a href="{% url 'eventos:listar_eventos' %}" class="calendar-btn"><i class="fa-solid fa-list"></i> Lista de eventos</a>
-      <a href="{% url 'eventos:criar_evento' %}" class="calendar-btn primary"><i class="fa-solid fa-plus"></i> Criar evento</a>
+      <a href="{% url 'eventos:listar_eventos' %}" class="calendar-btn"><i class="fa-solid fa-list" aria-hidden="true"></i> Lista de eventos</a>
+      <button type="button" class="calendar-btn primary" id="openCreateEvent"><i class="fa-solid fa-plus" aria-hidden="true"></i> Criar evento</button>
     </div>
   </div>
 
-  <div class="calendar-panel">
-    <div id="calendar"></div>
+  <div class="calendar-legend" aria-label="Categorias dos eventos">
+    <span><i class="legend-dot legend-prova"></i>Prova</span>
+    <span><i class="legend-dot legend-trabalho"></i>Trabalho</span>
+    <span><i class="legend-dot legend-atividade"></i>Atividade</span>
+    <span><i class="legend-dot legend-estudo"></i>Estudo</span>
+    <span><i class="legend-dot legend-pessoal"></i>Pessoal</span>
+    <span><i class="legend-dot legend-outro"></i>Outro</span>
+    <span><i class="legend-dot legend-classroom"></i>Google Classroom</span>
+  </div>
+
+  <div class="calendar-panel"><div id="calendar"></div></div>
+
+  <div class="calendar-modal-backdrop" id="eventModal" hidden>
+    <section class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+      <button type="button" class="calendar-modal-close" id="closeEventModal" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      <h2 id="eventModalTitle">Criar evento</h2>
+      <form id="eventForm" method="post" action="{{ create_event_url }}" data-create-url="{{ create_event_url }}">
+        {% csrf_token %}
+        <label class="calendar-field">Título{{ event_form.titulo }}</label>
+        <label class="calendar-field">Descrição (opcional){{ event_form.descricao }}</label>
+        <div class="calendar-form-row">
+          <label class="calendar-field">Categoria{{ event_form.categoria }}</label>
+          <label class="calendar-field">Data{{ event_form.data }}</label>
+          <label class="calendar-field">Horário{{ event_form.horario }}</label>
+        </div>
+        <label class="calendar-field">Visibilidade{{ event_form.visibilidade }}</label>
+        <label class="calendar-field" id="eventClassField" hidden>Turma (quando disponível){{ event_form.turma }}</label>
+        <p class="calendar-form-error" id="eventFormError" role="alert" hidden></p>
+        <div class="calendar-modal-actions">
+          <button type="button" class="calendar-btn" id="cancelEventModal">Cancelar</button>
+          <button type="submit" class="calendar-btn primary" id="submitEventModal">Criar evento</button>
+        </div>
+      </form>
+    </section>
   </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js"></script>
+{{ calendar_events|json_script:"calendar-events-data" }}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   const calendarEl = document.getElementById('calendar');
-  const usuarioId = "{{ usuario_id|escapejs }}";
-  const eventos = [
-    {% for evento in eventos %}
-      {
-        id: "{{ evento.id }}",
-        title: "{{ evento.titulo|escapejs }}",
-        start: "{{ evento.data|date:'Y-m-d' }}{% if evento.horario %}T{{ evento.horario|time:'H:i' }}{% endif %}",
-        descricao: "{{ evento.descricao|escapejs }}",
-        categoria: "{{ evento.get_categoria_display|escapejs }}",
-        criador_id: "{{ evento.criador.id }}",
-        backgroundColor: "#16a34a",
-        borderColor: "#16a34a"
-      },
-    {% endfor %}
-    {% for atividade in atividades_classroom %}
-      {
-        id: "classroom-{{ atividade.id }}",
-        title: "{{ atividade.titulo|escapejs }}",
-        start: "{{ atividade.data_entrega|date:'Y-m-d\\TH:i:s' }}",
-        descricao: "Atividade do Google Classroom",
-        categoria: "Classroom",
-        origem: "classroom",
-        link: "{{ atividade.link|escapejs }}",
-        backgroundColor: "#2563eb",
-        borderColor: "#2563eb"
-      },
-    {% endfor %}
-  ];
+  const modal = document.getElementById('eventModal');
+  const form = document.getElementById('eventForm');
+  const submitButton = document.getElementById('submitEventModal');
+  const errorBox = document.getElementById('eventFormError');
+  const visibilityField = form.querySelector('[name="visibilidade"]');
+  const classField = document.getElementById('eventClassField');
+  let editingEvent = null;
+
+  const categoryStyles = {
+    PROVA: { marker: '#059669', background: '#e3f4ee' },
+    TRABALHO: { marker: '#2563eb', background: '#e7f0fc' },
+    ATIVIDADE: { marker: '#d97706', background: '#fff2df' },
+    ESTUDO: { marker: '#7c3aed', background: '#f1eafd' },
+    PESSOAL: { marker: '#0f9488', background: '#e1f4f1' },
+    OUTRO: { marker: '#64748b', background: '#edf0f3' },
+    CLASSROOM: { marker: '#1a73e8', background: '#e8f0fe' }
+  };
+  const events = JSON.parse(document.getElementById('calendar-events-data').textContent);
+  const formatNumber = (number) => String(number).padStart(2, '0');
+  const localDate = (date) => `${date.getFullYear()}-${formatNumber(date.getMonth() + 1)}-${formatNumber(date.getDate())}`;
+  const localTime = (date) => `${formatNumber(date.getHours())}:${formatNumber(date.getMinutes())}`;
+  const closeModal = () => { modal.hidden = true; document.body.classList.remove('calendar-modal-open'); editingEvent = null; };
+  const openModal = () => { modal.hidden = false; document.body.classList.add('calendar-modal-open'); form.querySelector('[name="titulo"]').focus(); };
+  const updateVisibility = () => { classField.hidden = visibilityField.value !== 'TURMA'; };
+  const clearErrors = () => { errorBox.textContent = ''; errorBox.hidden = true; };
+  const showErrors = (errors) => {
+    const messages = Object.values(errors || {}).flat().map((error) => error.message);
+    errorBox.textContent = messages.join(' ') || 'Não foi possível salvar o evento. Tente novamente.';
+    errorBox.hidden = false;
+  };
+
+  function startCreate() {
+    editingEvent = null;
+    form.reset();
+    form.action = form.dataset.createUrl;
+    form.dataset.mode = 'create';
+    document.getElementById('eventModalTitle').textContent = 'Criar evento';
+    submitButton.textContent = 'Criar evento';
+    clearErrors();
+    updateVisibility();
+    openModal();
+  }
+
+  function startEdit(event) {
+    editingEvent = event;
+    form.reset();
+    form.action = event.extendedProps.edit_url;
+    form.dataset.mode = 'edit';
+    form.querySelector('[name="titulo"]').value = event.title;
+    form.querySelector('[name="descricao"]').value = event.extendedProps.descricao || '';
+    form.querySelector('[name="categoria"]').value = event.extendedProps.categoria;
+    form.querySelector('[name="data"]').value = localDate(event.start);
+    form.querySelector('[name="horario"]').value = localTime(event.start);
+    form.querySelector('[name="visibilidade"]').value = event.extendedProps.visibilidade;
+    form.querySelector('[name="turma"]').value = event.extendedProps.turma || '';
+    document.getElementById('eventModalTitle').textContent = 'Editar evento';
+    submitButton.textContent = 'Salvar alterações';
+    clearErrors();
+    updateVisibility();
+    openModal();
+  }
+
+  document.getElementById('openCreateEvent').addEventListener('click', startCreate);
+  document.getElementById('closeEventModal').addEventListener('click', closeModal);
+  document.getElementById('cancelEventModal').addEventListener('click', closeModal);
+  modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !modal.hidden) closeModal(); });
+  visibilityField.addEventListener('change', updateVisibility);
+  updateVisibility();
 
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     locale: 'pt-br',
     height: 'auto',
+    displayEventTime: true,
+    eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+    fixedWeekCount: false,
+    showNonCurrentDates: false,
     buttonText: { today: 'hoje', month: 'mês', week: 'semana', day: 'dia' },
     headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
-    events: eventos,
-    eventMouseEnter: function(info) {
-      const evento = info.event;
+    events,
+    eventContent(arg) {
+      const content = document.createElement('span');
+      content.className = `calendar-event-title${arg.view.type === 'timeGridWeek' ? ' calendar-event-title--week' : ''}`;
+      const isClassroom = arg.event.extendedProps.origem === 'classroom';
+      const style = categoryStyles[arg.event.extendedProps.categoria] || categoryStyles.OUTRO;
+      const marker = document.createElement('span');
+      marker.className = isClassroom ? 'calendar-event-google' : 'calendar-event-dot';
+      marker.style.setProperty('--event-marker-color', style.marker);
+      if (isClassroom) {
+        const googleIcon = document.createElement('i');
+        googleIcon.className = 'fa-brands fa-google';
+        googleIcon.setAttribute('aria-hidden', 'true');
+        marker.append(googleIcon);
+      }
+      content.append(marker);
+      if (arg.timeText) {
+        const time = document.createElement('time');
+        time.className = 'calendar-event-time';
+        time.textContent = arg.timeText;
+        content.append(time);
+      }
+      const title = document.createElement('span');
+      title.className = 'calendar-event-name';
+      title.textContent = arg.event.title;
+      content.append(title);
+      return { domNodes: [content] };
+    },
+    eventDidMount(info) {
+      const style = categoryStyles[info.event.extendedProps.categoria] || categoryStyles.OUTRO;
+      info.el.style.setProperty('background-color', style.background, 'important');
+      info.el.style.setProperty('border-color', 'transparent', 'important');
+      info.el.style.setProperty('color', '#111827', 'important');
+    },
+    eventMouseEnter(info) {
+      const event = info.event;
       const tooltip = document.createElement('div');
-      tooltip.classList.add('evento-tooltip');
-      tooltip.innerHTML = `<strong>${evento.title}</strong><br>${evento.extendedProps.categoria || ''}${evento.extendedProps.descricao ? `<br>${evento.extendedProps.descricao}` : ''}`;
-      document.body.appendChild(tooltip);
+      tooltip.className = 'evento-tooltip';
+      const title = document.createElement('strong');
+      title.textContent = event.title;
+      tooltip.append(title);
+      const category = document.createElement('div');
+      category.textContent = event.extendedProps.categoria_label || '';
+      tooltip.append(category);
+      if (event.extendedProps.descricao) {
+        const description = document.createElement('div');
+        description.textContent = event.extendedProps.descricao;
+        tooltip.append(description);
+      }
+      document.body.append(tooltip);
       tooltip.style.left = `${info.jsEvent.pageX + 10}px`;
       tooltip.style.top = `${info.jsEvent.pageY + 10}px`;
       info.el._tooltip = tooltip;
     },
-    eventMouseLeave: function(info) {
+    eventMouseLeave(info) {
       if (info.el._tooltip) { info.el._tooltip.remove(); info.el._tooltip = null; }
     },
-    eventClick: function(info) {
-      const evento = info.event;
-      if (evento.extendedProps.origem === 'classroom') {
-        if (evento.extendedProps.link) window.open(evento.extendedProps.link, '_blank', 'noopener,noreferrer');
+    eventClick(info) {
+      const event = info.event;
+      if (event.extendedProps.origem === 'classroom') {
+        if (event.extendedProps.link) window.open(event.extendedProps.link, '_blank', 'noopener,noreferrer');
         return;
       }
-      if (evento.extendedProps.criador_id === usuarioId) {
-        window.location.href = `/eventos/editar/${evento.id}/`;
-      }
+      if (event.extendedProps.can_edit) startEdit(event);
     }
   });
   calendar.render();
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (submitButton.disabled) return;
+    submitButton.disabled = true;
+    clearErrors();
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      let result;
+      try { result = await response.json(); }
+      catch { throw new Error('O servidor não retornou uma resposta válida. Tente novamente.'); }
+      if (!response.ok || !result.ok) {
+        if (result.errors) showErrors(result.errors);
+        else throw new Error(result.error || 'Não foi possível salvar o evento.');
+        return;
+      }
+
+      const saved = result.event;
+      const style = categoryStyles[saved.categoria] || categoryStyles.OUTRO;
+      if (form.dataset.mode === 'edit' && editingEvent) {
+        editingEvent.setProp('title', saved.title);
+        editingEvent.setStart(saved.start);
+        editingEvent.setProp('backgroundColor', style.background);
+        editingEvent.setProp('borderColor', 'transparent');
+        editingEvent.setExtendedProp('descricao', saved.descricao);
+        editingEvent.setExtendedProp('categoria', saved.categoria);
+        editingEvent.setExtendedProp('categoria_label', saved.categoria_label);
+        editingEvent.setExtendedProp('visibilidade', saved.visibilidade);
+        editingEvent.setExtendedProp('turma', saved.turma);
+      } else {
+        calendar.addEvent({ ...saved, backgroundColor: style.background, borderColor: 'transparent' });
+      }
+      closeModal();
+      form.reset();
+      updateVisibility();
+    } catch (error) {
+      showErrors({ request: [{ message: error.message }] });
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
 });
 </script>
 {% endblock %}

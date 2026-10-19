@@ -3,13 +3,13 @@
 {% block title %}Eventos - IntelIF{% endblock %}
 {% block page_title %}Calendário{% endblock %}
 {% block nav_calendario_active %}active{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'intelif/css/forms.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'intelif/css/forms.css' %}"><link rel="stylesheet" href="{% static 'intelif/css/calendar.css' %}">{% endblock %}
 {% block content %}
   <div class="page-intro">
     <div><h2>Eventos</h2><p>Lista de compromissos disponíveis para sua conta.</p></div>
     <div class="page-actions">
       <a href="{% url 'eventos:calendario' %}" class="btn-if btn-if-outline"><i class="fa-regular fa-calendar"></i> Calendário</a>
-      <a href="{% url 'eventos:criar_evento' %}" class="btn-if"><i class="fa-solid fa-plus"></i> Criar evento</a>
+      <button type="button" class="btn-if" id="openCreateEvent"><i class="fa-solid fa-plus"></i> Criar evento</button>
     </div>
   </div>
 
@@ -37,4 +37,135 @@
       <div class="empty-state dashboard-card"><i class="fa-regular fa-calendar-xmark"></i><p>Nenhum evento cadastrado.</p></div>
     {% endfor %}
   </div>
+
+  <div class="calendar-modal-backdrop" id="eventModal" hidden>
+    <section class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+      <button type="button" class="calendar-modal-close" id="closeEventModal" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      <h2 id="eventModalTitle">Criar evento</h2>
+      <form id="eventForm" method="post" action="{% url 'eventos:criar_evento' %}">
+        {% csrf_token %}
+        <label class="calendar-field">Título{{ event_form.titulo }}</label>
+        <label class="calendar-field">Descrição (opcional){{ event_form.descricao }}</label>
+        <div class="calendar-form-row">
+          <label class="calendar-field">Categoria{{ event_form.categoria }}</label>
+          <label class="calendar-field">Data{{ event_form.data }}</label>
+          <label class="calendar-field">Horário{{ event_form.horario }}</label>
+        </div>
+        <label class="calendar-field">Visibilidade{{ event_form.visibilidade }}</label>
+        <label class="calendar-field" id="eventClassField" hidden>Turma{{ event_form.turma }}</label>
+        <p class="calendar-form-error" id="eventFormError" role="alert" hidden></p>
+        <div class="calendar-modal-actions">
+          <button type="button" class="calendar-btn" id="cancelEventModal">Cancelar</button>
+          <button type="submit" class="calendar-btn primary" id="submitEventModal">Criar evento</button>
+        </div>
+      </form>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('eventModal');
+  const form = document.getElementById('eventForm');
+  const submit = document.getElementById('submitEventModal');
+  const errorBox = document.getElementById('eventFormError');
+  const visibility = form.querySelector('[name="visibilidade"]');
+  const classField = document.getElementById('eventClassField');
+  const list = document.querySelector('.event-list');
+
+  const close = () => { modal.hidden = true; document.body.classList.remove('calendar-modal-open'); };
+  const updateVisibility = () => { classField.hidden = visibility.value !== 'TURMA'; };
+  const clearError = () => { errorBox.textContent = ''; errorBox.hidden = true; };
+  const showError = (message) => { errorBox.textContent = message; errorBox.hidden = false; };
+  const open = () => {
+    form.reset();
+    clearError();
+    updateVisibility();
+    modal.hidden = false;
+    document.body.classList.add('calendar-modal-open');
+    form.querySelector('[name="titulo"]').focus();
+  };
+  const appendEvent = (eventData) => {
+    const empty = list.querySelector('.empty-state');
+    if (empty) empty.remove();
+    const card = document.createElement('article');
+    card.className = 'event-card';
+    const content = document.createElement('div');
+    const title = document.createElement('h3');
+    title.textContent = eventData.title;
+    content.append(title);
+    if (eventData.descricao) {
+      const description = document.createElement('p');
+      description.textContent = eventData.descricao;
+      content.append(description);
+    }
+    const meta = document.createElement('div');
+    meta.className = 'event-meta';
+    [`${eventData.data_display}`, eventData.horario_display, eventData.categoria_label, eventData.visibilidade_label].forEach((value, index) => {
+      const item = document.createElement('span');
+      const icon = document.createElement('i');
+      icon.className = ['fa-regular fa-calendar', 'fa-regular fa-clock', 'fa-solid fa-tag', 'fa-solid fa-eye'][index];
+      item.append(icon, document.createTextNode(value));
+      meta.append(item);
+    });
+    content.append(meta);
+    card.append(content);
+    const actions = document.createElement('div');
+    actions.className = 'event-card-actions';
+    [
+      [eventData.edit_url, 'Editar', 'fa-regular fa-pen-to-square', 'icon-btn'],
+      [eventData.delete_url, 'Excluir', 'fa-regular fa-trash-can', 'icon-btn danger']
+    ].forEach(([url, label, iconClass, className]) => {
+      const link = document.createElement('a');
+      link.className = className;
+      link.href = url;
+      link.title = label;
+      link.setAttribute('aria-label', label);
+      const icon = document.createElement('i');
+      icon.className = iconClass;
+      link.append(icon);
+      actions.append(link);
+    });
+    card.append(actions);
+    list.append(card);
+  };
+
+  document.getElementById('openCreateEvent').addEventListener('click', open);
+  document.getElementById('closeEventModal').addEventListener('click', close);
+  document.getElementById('cancelEventModal').addEventListener('click', close);
+  modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !modal.hidden) close(); });
+  visibility.addEventListener('change', updateVisibility);
+  updateVisibility();
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (submit.disabled) return;
+    submit.disabled = true;
+    clearError();
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        const errors = Object.values(result.errors || {}).flat().map((error) => error.message);
+        showError(result.error || errors.join(' ') || 'Não foi possível criar o evento.');
+        return;
+      }
+      appendEvent(result.event);
+      close();
+      form.reset();
+      updateVisibility();
+    } catch {
+      showError('Não foi possível conectar ao servidor. Tente novamente.');
+    } finally {
+      submit.disabled = false;
+    }
+  });
+});
+</script>
 {% endblock %}

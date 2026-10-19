@@ -2,16 +2,50 @@
 .calendar-header h2 { font-size: 1.7rem; font-weight: 750; margin: 0 0 5px; }
 .calendar-header p { margin: 0; color: var(--if-muted); font-size: .9rem; }
 .calendar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.calendar-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 13px; border-radius: 10px; background: #fff; border: 1px solid var(--if-border); color: #374151; font-size: .82rem; font-weight: 650; }
+.calendar-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 13px; border-radius: 10px; background: #fff; border: 1px solid var(--if-border); color: #374151; font: inherit; font-size: .82rem; font-weight: 650; cursor: pointer; text-decoration: none; }
+.page-actions button.btn-if { cursor: pointer; font: inherit; }
 .calendar-btn.primary { background: var(--if-green); border-color: var(--if-green); color: #fff; }
 .calendar-btn:hover { border-color: #bbf7d0; color: var(--if-green-dark); }
 .calendar-btn.primary:hover { background: var(--if-green-dark); color: #fff; }
 .calendar-panel { background: #fff; border: 1px solid var(--if-border); border-radius: 14px; padding: 20px; box-shadow: 0 1px 5px rgba(15,23,42,.04); }
+.calendar-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 18px; margin: 0 0 14px; color: #4b5563; font-size: .76rem; }
+.calendar-legend > span { display: inline-flex; align-items: center; gap: 7px; }
+.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.legend-prova { background: #059669; } .legend-trabalho { background: #2563eb; } .legend-atividade { background: #d97706; } .legend-estudo { background: #7c3aed; } .legend-pessoal { background: #0f9488; } .legend-outro { background: #64748b; } .legend-classroom { background: #1a73e8; }
 #calendar { min-height: 660px; }
 .fc { --fc-border-color: #e5e7eb; --fc-button-bg-color: #16a34a; --fc-button-border-color: #16a34a; --fc-button-hover-bg-color: #15803d; --fc-button-hover-border-color: #15803d; --fc-button-active-bg-color: #166534; --fc-button-active-border-color: #166534; }
 .fc .fc-toolbar-title { font-size: 1.15rem; font-weight: 750; }
 .fc .fc-button { border-radius: 8px; font-size: .78rem; text-transform: capitalize; box-shadow: none !important; }
 .fc .fc-col-header-cell-cushion, .fc .fc-daygrid-day-number { color: #374151; text-decoration: none; }
-.fc .fc-event { border-radius: 5px; padding: 1px 3px; cursor: pointer; }
+.fc .fc-event { border-radius: 7px; padding: 3px 5px; cursor: pointer; box-shadow: none; }
+.fc .fc-event-main { color: #111827; }
+.calendar-event-title { display: flex; align-items: flex-start; gap: 5px; min-width: 0; color: #111827; white-space: normal; line-height: 1.35; }
+.calendar-event-dot { width: 9px; height: 9px; flex: 0 0 9px; margin-top: 4px; border-radius: 50%; background: var(--event-marker-color); }
+.calendar-event-google { flex: 0 0 auto; margin-top: 1px; color: var(--event-marker-color); }
+.calendar-event-google i { display: block; }
+.calendar-event-time { flex: 0 0 auto; color: #111827; font-weight: 700; }
+.calendar-event-name { min-width: 0; overflow-wrap: break-word; word-break: normal; }
+.fc-timegrid-event .fc-event-main { overflow: hidden; padding: 2px 4px; }
+.fc-timegrid-event .calendar-event-title--week { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 5px; row-gap: 2px; align-items: start; }
+.calendar-event-title--week .calendar-event-dot, .calendar-event-title--week .calendar-event-google { grid-column: 1; grid-row: 1; }
+.calendar-event-title--week .calendar-event-name { grid-column: 2; grid-row: 1; }
+.calendar-event-title--week .calendar-event-time { grid-column: 2; grid-row: 2; font-size: .7rem; }
 .evento-tooltip { position: absolute; z-index: 1080; background: #111827; color: #fff; padding: 9px 11px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.18); max-width: 270px; font-size: .76rem; pointer-events: none; }
+.calendar-modal-backdrop[hidden] { display: none; }
+.calendar-modal-backdrop { position: fixed; z-index: 2000; inset: 0; display: grid; place-items: center; overflow-y: auto; padding: 20px; background: rgba(15,23,42,.38); }
+.calendar-modal { position: relative; width: min(640px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; padding: 28px; border-radius: 15px; background: #fff; box-shadow: 0 18px 52px rgba(15,23,42,.2); }
+.calendar-modal h2 { margin: 0 40px 22px 0; color: #1f2937; font-size: 1.3rem; font-weight: 750; }
+.calendar-modal-close { position: absolute; top: 18px; right: 20px; display: grid; width: 34px; height: 34px; place-items: center; border: 0; border-radius: 7px; background: transparent; color: #374151; font-size: 1.15rem; }
+.calendar-modal-close:hover { background: #f3f4f6; }
+.calendar-modal form { display: grid; gap: 14px; }
+.calendar-field { display: grid; gap: 6px; color: #374151; font-size: .8rem; font-weight: 650; }
+.calendar-field input, .calendar-field select, .calendar-field textarea { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #d1d5db; border-radius: 7px; background: #fff; color: #1f2937; font: inherit; font-size: .87rem; }
+.calendar-field textarea { min-height: 90px; resize: vertical; }
+.calendar-form-row { display: grid; grid-template-columns: 1.1fr 1fr .8fr; gap: 12px; }
+.calendar-form-error { margin: 0; color: #b42318; font-size: .82rem; }
+.calendar-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+.calendar-modal-actions button { min-width: 130px; }
+.calendar-modal-open { overflow: hidden; }
+.calendar-modal [hidden] { display: none !important; }
 @media (max-width: 767.98px) { .calendar-header { align-items: stretch; flex-direction: column; } .calendar-panel { padding: 12px; overflow-x: auto; } #calendar { min-width: 720px; } }
+@media (max-width: 575.98px) { .calendar-form-row { grid-template-columns: 1fr 1fr; } .calendar-form-row .calendar-field:first-child { grid-column: 1 / -1; } .calendar-modal { padding: 23px 18px; } .calendar-modal-actions { flex-direction: column-reverse; } .calendar-modal-actions button { width: 100%; } }

@@ -1,4 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone as datetime_timezone
+
+from django.utils import timezone
 
 from apps.materias.models import AtividadeClassroom
 from apps.usuarios.google import obter_turmas, obter_atividades
@@ -6,9 +8,7 @@ from apps.usuarios.google import obter_turmas, obter_atividades
 
 def sincronizar_atividades_classroom(usuario, token, completa=False):
 
-    agora = datetime.now()
-
-    limite_passado = agora - timedelta(days=30)
+    limite_passado = timezone.now() - timedelta(days=30)
 
     turmas = obter_turmas(token)
 
@@ -41,18 +41,29 @@ def sincronizar_atividades_classroom(usuario, token, completa=False):
 
             due_time = atividade.get("dueTime", {})
 
-            hora = due_time.get("hours", 23)
-            minuto = due_time.get("minutes", 59)
-            segundo = due_time.get("seconds", 0)
-
-            data_entrega = datetime(
-                ano,
-                mes,
-                dia,
-                hora,
-                minuto,
-                segundo
-            )
+            if due_time:
+                # O Google Classroom entrega dueDate/dueTime em UTC.
+                data_utc = datetime(
+                    ano,
+                    mes,
+                    dia,
+                    due_time.get("hours", 0),
+                    due_time.get("minutes", 0),
+                    due_time.get("seconds", 0),
+                    tzinfo=datetime_timezone.utc,
+                )
+                data_entrega = timezone.localtime(data_utc)
+            else:
+                # Sem horário definido no Classroom, representa o fim do dia local.
+                data_entrega = datetime(
+                    ano,
+                    mes,
+                    dia,
+                    23,
+                    59,
+                    0,
+                    tzinfo=timezone.get_default_timezone(),
+                )
 
             # Na sincronização rápida, ignora atividades com mais de 30 dias.
             if not completa and data_entrega < limite_passado:
