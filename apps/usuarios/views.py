@@ -6,6 +6,7 @@ from .google import oauth as google_oauth
 
 from apps.materias.suap import sincronizar_materias
 from apps.materias.classroom import sincronizar_atividades_classroom
+from .forms import FotoPerfilForm
 
 def login(request):
     if request.session.get("usuario_id"):
@@ -132,8 +133,21 @@ def perfil(request):
     if not usuario_id:
         return redirect("/usuarios/login/")
 
-    usuario = Usuario.objects.get(
-        id=usuario_id
-    )
+    usuario = Usuario.objects.get(id=usuario_id)
+    foto_form = FotoPerfilForm()
 
-    return render(request, "usuarios/perfil.html", {"usuario": usuario, "classroom_conectado": bool(request.session.get("google_token"))})
+    if request.method == "POST":
+        foto_form = FotoPerfilForm(request.POST, request.FILES)
+        if foto_form.is_valid():
+            nome_foto_anterior = usuario.foto_perfil.name if usuario.foto_perfil else ""
+            usuario.foto_perfil = foto_form.cleaned_data["foto"]
+            usuario.save(update_fields=["foto_perfil"])
+            if nome_foto_anterior:
+                Usuario._meta.get_field("foto_perfil").storage.delete(nome_foto_anterior)
+            return redirect("usuarios:perfil")
+
+    return render(request, "usuarios/perfil.html", {
+        "usuario": usuario,
+        "foto_form": foto_form,
+        "classroom_conectado": bool(request.session.get("google_token")),
+    })

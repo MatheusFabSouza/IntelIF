@@ -52,7 +52,10 @@
         <button class="sidebar-toggle d-lg-none" type="button" id="sidebarToggle" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false">
           <i class="fa-solid fa-bars"></i>
         </button>
-        <h1>{% block page_title %}Home{% endblock %}</h1>
+        <div class="topbar-title-group">
+          <h1>{% block page_title %}Home{% endblock %}</h1>
+          {% block page_subtitle %}{% endblock %}
+        </div>
       </div>
 
       <div class="topbar-right">
@@ -64,7 +67,9 @@
           <button class="profile-button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <span class="profile-name d-none d-sm-inline">{{ usuario.nome|default:'Perfil'|truncatechars:24 }}</span>
             <span class="profile-avatar">
-              {% if usuario.foto %}
+              {% if usuario.foto_perfil %}
+                <img src="{{ usuario.foto_perfil.url }}" alt="Foto de {{ usuario.nome }}">
+              {% elif usuario.foto %}
                 <img src="{{ usuario.foto }}" alt="Foto de {{ usuario.nome }}">
               {% else %}
                 <i class="fas fa-user"></i>

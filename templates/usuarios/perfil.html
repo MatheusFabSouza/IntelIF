@@ -2,49 +2,90 @@
 {% load static %}
 {% block title %}Perfil - IntelIF{% endblock %}
 {% block page_title %}Perfil{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle">Bem-vindo ao seu painel de gerenciamento de conta.</p>{% endblock %}
+{% block body_class %}profile-page-view{% endblock %}
 {% block nav_perfil_active %}active{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'intelif/css/profile.css' %}">{% endblock %}
 
 {% block content %}
-  <section class="profile-hero">
-    <div class="profile-photo">
-      {% if usuario.foto %}<img src="{{ usuario.foto }}" alt="Foto de {{ usuario.nome }}">{% else %}<i class="fa-regular fa-user"></i>{% endif %}
-    </div>
-    <div>
-      <h2>{{ usuario.nome }}</h2>
-      <p>{{ usuario.tipo_usuario }}{% if usuario.campus %} · {{ usuario.campus }}{% endif %}</p>
-    </div>
-  </section>
+  <div class="profile-page">
+    <div class="profile-layout">
+      <div class="profile-column">
+        <section class="profile-section personal-section" aria-labelledby="personal-title">
+          <h3 id="personal-title">Informações pessoais</h3>
+          <div class="profile-photo-row">
+            <div class="profile-photo">
+              {% if usuario.foto_perfil %}<img src="{{ usuario.foto_perfil.url }}" alt="Foto de {{ usuario.nome }}">{% elif usuario.foto %}<img src="{{ usuario.foto }}" alt="Foto de {{ usuario.nome }}">{% else %}<i class="fa-regular fa-user" aria-hidden="true"></i>{% endif %}
+            </div>
+            <div class="photo-change">
+              <form id="profilePhotoForm" method="post" enctype="multipart/form-data" action="{% url 'usuarios:perfil' %}">
+                {% csrf_token %}
+                <input class="visually-hidden" id="profilePhotoInput" type="file" name="foto" accept=".jpg,.jpeg,.png" aria-label="Escolher foto de perfil">
+                <div class="photo-actions">
+                  <button class="profile-btn profile-btn-outline" type="button" id="chooseProfilePhoto"><i class="fa-regular fa-image" aria-hidden="true"></i> Alterar foto</button>
+                  <button class="profile-btn" type="submit" id="saveProfilePhoto" hidden>Salvar foto</button>
+                </div>
+                <small id="profilePhotoHelp">JPG ou PNG · máximo 2 MB</small>
+                {% if foto_form.foto.errors %}<span class="photo-error" role="alert">{{ foto_form.foto.errors|join:" " }}</span>{% endif %}
+              </form>
+            </div>
+          </div>
 
-  <div class="profile-grid">
-    <section class="profile-section">
-      <h3>Informações acadêmicas</h3>
-      <div class="info-grid">
-        <div class="info-item"><span>Nome</span><strong>{{ usuario.nome }}</strong></div>
-        <div class="info-item"><span>E-mail</span><strong>{{ usuario.email|default:"Não informado" }}</strong></div>
-        <div class="info-item"><span>Matrícula</span><strong>{{ usuario.matricula|default:"Não informada" }}</strong></div>
-        <div class="info-item"><span>Campus</span><strong>{{ usuario.campus|default:"Não informado" }}</strong></div>
-        <div class="info-item"><span>Curso</span><strong>{{ usuario.curso|default:"Não informado" }}</strong></div>
-        <div class="info-item"><span>Tipo de usuário</span><strong>{{ usuario.tipo_usuario }}</strong></div>
-      </div>
-    </section>
+          <p class="readonly-note"><i class="fa-solid fa-lock" aria-hidden="true"></i> Os dados pessoais abaixo são sincronizados com o SUAP e somente para leitura.</p>
+          <div class="profile-fields">
+            <div class="profile-field"><label>Nome completo</label><div class="readonly-field"><span>{{ usuario.nome|default:"Não informado" }}</span><i class="fa-solid fa-lock" title="Somente leitura" aria-label="Somente leitura"></i></div></div>
+            <div class="profile-field"><label>E-mail</label><div class="readonly-field"><span>{{ usuario.email|default:"Não informado" }}</span><i class="fa-solid fa-lock" title="Somente leitura" aria-label="Somente leitura"></i></div></div>
+          </div>
+        </section>
 
-    <section class="profile-section">
-      <h3>Integrações</h3>
-      <div class="integration-card">
-        <div class="integration-head">
-          <div class="integration-icon"><i class="fa-brands fa-google"></i></div>
-          <div><h4>Google Classroom</h4><span class="status-pill {% if classroom_conectado %}ok{% else %}off{% endif %}">{% if classroom_conectado %}Conectado{% else %}Não conectado{% endif %}</span></div>
-        </div>
-        <p>Sincronize as atividades do Classroom para exibi-las no calendário e no resumo da página inicial.</p>
-        <div class="integration-actions">
-          {% if classroom_conectado %}
-            <a href="{% url 'usuarios:sincronizar_classroom' %}" class="profile-btn"><i class="fa-solid fa-rotate"></i> Sincronizar agora</a>
-          {% else %}
-            <a href="{% url 'usuarios:google_login' %}" class="profile-btn"><i class="fa-solid fa-link"></i> Conectar Classroom</a>
-          {% endif %}
-        </div>
+        <section class="profile-section integration-section" aria-labelledby="integration-title">
+          <h3 id="integration-title">Integrações</h3>
+          <div class="integration-card">
+            <div class="integration-head">
+              <div class="integration-icon"><i class="fa-brands fa-google" aria-hidden="true"></i></div>
+              <div><h4>Google Classroom</h4><span class="status-pill {% if classroom_conectado %}ok{% else %}off{% endif %}"><i class="fa-solid {% if classroom_conectado %}fa-circle-check{% else %}fa-circle-minus{% endif %}" aria-hidden="true"></i> {% if classroom_conectado %}Conectado{% else %}Não conectado{% endif %}</span></div>
+            </div>
+            <p>Sincronize as atividades do Classroom para exibi-las no calendário e no resumo da página inicial.</p>
+            <div class="integration-actions">
+              {% if classroom_conectado %}
+                <a href="{% url 'usuarios:sincronizar_classroom' %}" class="profile-btn"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Sincronização completa</a>
+              {% else %}
+                <a href="{% url 'usuarios:google_login' %}" class="profile-btn"><i class="fa-solid fa-link" aria-hidden="true"></i> Conectar Classroom</a>
+              {% endif %}
+            </div>
+          </div>
+        </section>
       </div>
-    </section>
+
+      <section class="profile-section academic-section" aria-labelledby="academic-title">
+        <h3 id="academic-title">Informações acadêmicas</h3>
+        <p class="readonly-note"><i class="fa-solid fa-lock" aria-hidden="true"></i> Informações obtidas do SUAP e somente para leitura.</p>
+        <div class="profile-fields academic-fields">
+          <div class="profile-field"><label>Matrícula / Código</label><div class="readonly-field"><span>{{ usuario.matricula|default:"Não informada" }}</span><i class="fa-solid fa-lock" title="Somente leitura" aria-label="Somente leitura"></i></div></div>
+          <div class="profile-field"><label>Tipo de vínculo</label><div class="readonly-field"><span>{{ usuario.tipo_usuario|default:"Não informado" }}</span><i class="fa-solid fa-lock" title="Somente leitura" aria-label="Somente leitura"></i></div></div>
+          {% if usuario.curso %}<div class="profile-field"><label>Curso</label><div class="readonly-field"><span>{{ usuario.curso }}</span><i class="fa-solid fa-lock" title="Somente leitura" aria-label="Somente leitura"></i></div></div>{% endif %}
+          {% if usuario.turma %}<div class="profile-field"><label>Turma</label><div class="readonly-field"><span>{{ usuario.turma }}</span><i class="fa-solid fa-lock" title="Somente leitura" aria-label="Somente leitura"></i></div></div>{% endif %}
+          {% if usuario.categoria %}<div class="profile-field"><label>Categoria</label><div class="readonly-field"><span>{{ usuario.categoria }}</span><i class="fa-solid fa-lock" title="Somente leitura" aria-label="Somente leitura"></i></div></div>{% endif %}
+          <div class="profile-field"><label>Campus</label><div class="readonly-field"><span>{{ usuario.campus|default:"Não informado" }}</span><i class="fa-solid fa-lock" title="Somente leitura" aria-label="Somente leitura"></i></div></div>
+        </div>
+      </section>
+    </div>
   </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('profilePhotoInput');
+  const choose = document.getElementById('chooseProfilePhoto');
+  const save = document.getElementById('saveProfilePhoto');
+  const help = document.getElementById('profilePhotoHelp');
+  choose.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => {
+    const photo = input.files[0];
+    save.hidden = !photo;
+    help.textContent = photo ? photo.name : 'JPG ou PNG · máximo 2 MB';
+  });
+});
+</script>
 {% endblock %}

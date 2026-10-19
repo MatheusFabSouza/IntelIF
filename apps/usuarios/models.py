@@ -1,5 +1,6 @@
 import uuid
 
+from django.core.validators import FileExtensionValidator
 from django.db import models
 
 
@@ -52,6 +53,12 @@ class Usuario(models.Model):
 
     foto = models.URLField(
         blank=True
+    )
+
+    foto_perfil = models.FileField(
+        upload_to="usuarios/fotos/",
+        blank=True,
+        validators=[FileExtensionValidator(["jpg", "jpeg", "png"])],
     )
 
     def __str__(self):
